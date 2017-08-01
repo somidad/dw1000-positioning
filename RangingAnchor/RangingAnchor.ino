@@ -44,7 +44,6 @@ void transmitBeacon() {
   DW1000.setDefaults();
   SET_TYPE(txBuffer, BEACON);
   SET_SOURCE(txBuffer, anchorId);
-  SET_DEST(txBuffer, tagId);
   DW1000Time delay = DW1000Time(random(0, BEACON_JITTER_MS),
                                 DW1000Time::MILLISECONDS);
   DW1000.setDelay(delay);
