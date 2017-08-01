@@ -48,7 +48,7 @@ void transmitPoll() {
   SET_DEST(txBuffer, anchorId);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
-  LOGF("tx: POLL to "); LOGLN(anchorId);
+  LOGTIME; LOGF("tx: POLL to "); LOGLN(anchorId);
 }
 
 void transmitRange() {
@@ -62,7 +62,7 @@ void transmitRange() {
   DW1000.setDelay(delay);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
-  LOGF("tx: RANGE to "); LOGLN(anchorId);
+  LOGTIME; LOGF("tx: RANGE to "); LOGLN(anchorId);
 }
 
 /*
@@ -120,8 +120,9 @@ void setup() {
 void loop() {
   uint32_t curMillis = millis();
   if ((expectedMsg == POLL_ACK || expectedMsg == RANGE_REPORT) &&
-      curMillis - lastSent > TIMEOUT_PERIOD_MS) {
-    LOGF("timeout of "); LOGLN(expectedMsg);
+      (curMillis - lastSent > TIMEOUT_PERIOD_MS)) {
+    LOGTIME; LOGF("timeout of "); LOG(expectedMsg); LOGF(" at ");
+    LOG(curMillis); LOGF(" (lastSent: "); LOG(lastSent); LOGFLN(")");
     expectedMsg = BEACON;
     anchorId = TAG_NONE;
   }
@@ -146,7 +147,7 @@ void loop() {
     }
     if (msgId == BEACON) {
       GET_SOURCE(rxBuffer, anchorId);
-      LOGF("rx: BEACON from "); LOGLN(anchorId);
+      LOGTIME; LOGF("rx: BEACON from "); LOGLN(anchorId);
       /*
        * NOTE: This is an example.
        * You should probe at least 3 beacons
@@ -155,17 +156,17 @@ void loop() {
       transmitPoll();
     } else if (msgId == POLL_ACK) {
       DW1000.getReceiveTimestamp(timePollAckReceived);
-      LOGF("rx: POLL_ACK from "); LOGLN(anchorId);
+      LOGTIME; LOGF("rx: POLL_ACK from "); LOGLN(anchorId);
       expectedMsg = RANGE_REPORT;
       transmitRange();
     } else if (msgId == RANGE_REPORT) {
-      LOGF("rx: RANGE_REPORT from "); LOGLN(anchorId);
+      LOGTIME; LOGF("rx: RANGE_REPORT from "); LOGLN(anchorId);
       timePollReceived.setTimestamp(rxBuffer + 5);
       timePollAckSent.setTimestamp(rxBuffer + 10);
       timeRangeReceived.setTimestamp(rxBuffer + 15);
       computeRangeAsymmetric();
       float distance = timeComputedRange.getAsMeters();
-      LOGF("Range: "); LOG(distance); LOGFLN(" m");
+      LOGTIME; LOGF("Range: "); LOG(distance); LOGFLN(" m");
       expectedMsg = POLL_ACK;
       transmitPoll();
     }

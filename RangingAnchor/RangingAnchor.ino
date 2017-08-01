@@ -51,7 +51,7 @@ void transmitBeacon() {
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
   UPDATE_LAST_BEACON;
-  LOGFLN("tx: Beacon");
+  LOGTIME; LOGFLN("tx: Beacon");
 }
 
 void transmitPollAck() {
@@ -65,7 +65,7 @@ void transmitPollAck() {
   DW1000.setDelay(delay);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
-  LOGF("tx: POLL_ACK to ") LOGLN(tagId);
+  LOGTIME; LOGF("tx: POLL_ACK to "); LOGLN(tagId);
 }
 
 void transmitRangeReport() {
@@ -79,7 +79,7 @@ void transmitRangeReport() {
   timeRangeReceived.getTimestamp(txBuffer + 15);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
-  LOGF("tx: RANGE_REPORT to ") LOGLN(tagId);
+  LOGTIME; LOGF("tx: RANGE_REPORT to "); LOGLN(tagId);
 }
 
 void setup() {
@@ -108,8 +108,9 @@ void loop() {
   if (curMillis - lastBeacon > BEACON_PERIOD_MS) {
     transmitBeacon();
   }
-  if (expectedMsg == RANGE && curMillis - lastSent > TIMEOUT_PERIOD_MS) {
-    LOGFLN("timeout: RANGE");
+  if (expectedMsg == RANGE && (curMillis - lastSent > TIMEOUT_PERIOD_MS)) {
+    LOGTIME; LOGF("timeout RANGE at ");  LOGLN(curMillis); LOGF(" (lastSent: ");
+    LOG(lastSent); LOGFLN(")");
     expectedMsg = POLL;
     tagId = TAG_NONE;
   }
@@ -131,10 +132,10 @@ void loop() {
       DW1000.getReceiveTimestamp(timePollReceived);
       expectedMsg = RANGE;
       GET_SOURCE(rxBuffer, tagId);
-      LOGF("rx: POLL from "); LOGLN(tagId);
+      LOGTIME; LOGF("rx: POLL from "); LOGLN(tagId);
       transmitPollAck();
     } else if (msg == RANGE && DOES_MATCH_SOURCE(rxBuffer, tagId)) {
-      LOGF("rx: RANGE from "); LOGLN(tagId);
+      LOGTIME; LOGF("rx: RANGE from "); LOGLN(tagId);
       DW1000.getReceiveTimestamp(timeRangeReceived);
       expectedMsg = POLL;
       tagId = TAG_NONE;
