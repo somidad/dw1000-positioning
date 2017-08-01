@@ -1,5 +1,5 @@
 /*
- * NOTE: Copy or symlink this to the correspond directory
+ * NOTE: Copy or (sym/hard)link this to the correspond directory
  */
 
 #ifndef ARDUINO_COMMON_H
