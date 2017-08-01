@@ -3,7 +3,7 @@
 
 #include "arduino-common.h"
 
-byte expectedMsg;
+byte expectedMsg = POLL;
 
 byte txBuffer[LEN_DATA];
 byte rxBuffer[LEN_DATA];
@@ -103,7 +103,8 @@ void loop() {
   if (curMillis - lastBeacon > BEACON_PERIOD_MS) {
     transmitBeacon();
   }
-  if (curMillis - timePollAckSent.getAsMicroSeconds() * 1000
+  if (expectedMsg == RANGE &&
+      curMillis - timePollAckSent.getAsMicroSeconds() * 1000
       > TIMEOUT_PERIOD_MS) {
     expectedMsg = POLL;
     tagId = TAG_NONE;
@@ -116,6 +117,7 @@ void loop() {
   }
   if (receivedFrame) {
     receivedFrame = false;
+    DW1000.getData(rxBuffer, LEN_DATA);
     byte msg = GET_TYPE(rxBuffer);
     if (msg != expectedMsg || !DOES_MATCH_DEST(rxBuffer, anchorId)) {
       return;
@@ -128,6 +130,7 @@ void loop() {
     } else if (msg == RANGE && DOES_MATCH_SOURCE(rxBuffer, tagId)) {
       DW1000.getReceiveTimestamp(timeRangeReceived);
       expectedMsg = POLL;
+      tagId = TAG_NONE;
       transmitRangeReport();
     }
   }
