@@ -65,7 +65,7 @@ void transmitPollAck() {
   DW1000.setDelay(delay);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
-  LOGFLN("tx: POLL_ACK");
+  LOGF("tx: POLL_ACK to ") LOGLN(tagId);
 }
 
 void transmitRangeReport() {
@@ -79,7 +79,7 @@ void transmitRangeReport() {
   timeRangeReceived.getTimestamp(txBuffer + 15);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
-  LOGFLN("tx: RANGE_REPORT");
+  LOGF("tx: RANGE_REPORT to ") LOGLN(tagId);
 }
 
 void setup() {
@@ -131,10 +131,10 @@ void loop() {
       DW1000.getReceiveTimestamp(timePollReceived);
       expectedMsg = RANGE;
       GET_SOURCE(rxBuffer, tagId);
-      LOGF("rx: POLL ("); LOG(tagId); LOGFLN(")");
+      LOGF("rx: POLL from "); LOGLN(tagId);
       transmitPollAck();
     } else if (msg == RANGE && DOES_MATCH_SOURCE(rxBuffer, tagId)) {
-      LOGF("rx: RANGE ("); LOG(tagId); LOGFLN(")");
+      LOGF("rx: RANGE from "); LOGLN(tagId);
       DW1000.getReceiveTimestamp(timeRangeReceived);
       expectedMsg = POLL;
       tagId = TAG_NONE;
