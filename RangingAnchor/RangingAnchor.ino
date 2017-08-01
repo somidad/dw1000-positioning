@@ -118,7 +118,6 @@ void loop() {
     sentFrame = false;
     if (GET_TYPE(txBuffer) == POLL_ACK) {
       DW1000.getTransmitTimestamp(timePollAckSent);
-      lastSent = millis();
     }
   }
   if (receivedFrame) {
@@ -134,12 +133,14 @@ void loop() {
       GET_SOURCE(rxBuffer, tagId);
       LOGTIME; LOGF("rx: POLL from "); LOGLN(tagId);
       transmitPollAck();
+      lastSent = millis();
+      LOGTIME; LOGF("last POLL_ACK sent: "); LOGLN(lastSent);
     } else if (msg == RANGE && DOES_MATCH_SOURCE(rxBuffer, tagId)) {
       LOGTIME; LOGF("rx: RANGE from "); LOGLN(tagId);
       DW1000.getReceiveTimestamp(timeRangeReceived);
+      transmitRangeReport();
       expectedMsg = POLL;
       tagId = TAG_NONE;
-      transmitRangeReport();
     }
   }
 }

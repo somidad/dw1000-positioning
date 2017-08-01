@@ -131,10 +131,8 @@ void loop() {
     byte msgId = GET_TYPE(txBuffer);
     if (msgId == POLL) {
       DW1000.getTransmitTimestamp(timePollSent);
-      lastSent = millis();
     } else if (msgId == RANGE) {
       DW1000.getTransmitTimestamp(timeRangeSent);
-      lastSent = millis();
     }
   }
   if (receivedFrame) {
@@ -153,12 +151,15 @@ void loop() {
        * You should probe at least 3 beacons
        * and then probe them sequentially
        */
+      expectedMsg = POLL_ACK;
       transmitPoll();
+      lastSent = millis();
     } else if (msgId == POLL_ACK) {
       DW1000.getReceiveTimestamp(timePollAckReceived);
       LOGTIME; LOGF("rx: POLL_ACK from "); LOGLN(anchorId);
       expectedMsg = RANGE_REPORT;
       transmitRange();
+      lastSent = millis();
     } else if (msgId == RANGE_REPORT) {
       LOGTIME; LOGF("rx: RANGE_REPORT from "); LOGLN(anchorId);
       timePollReceived.setTimestamp(rxBuffer + 5);
