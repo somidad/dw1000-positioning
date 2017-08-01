@@ -39,4 +39,6 @@
 #define DOES_MATCH_SOURCE(nodeId) (!memcmp(rxBuffer + 1, &nodeId, ADDR_SIZE))
 #define DOES_MATCH_DEST(nodeId) (!memcmp(rxBuffer + 3, &nodeId, ADDR_SIZE))
 
+#define LOG(str) (Serial.println(F(str)))
+
 #endif
