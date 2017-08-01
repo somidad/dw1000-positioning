@@ -9,6 +9,7 @@ byte txBuffer[LEN_DATA];
 byte rxBuffer[LEN_DATA];
 
 uint32_t lastBeacon;
+uint32_t lastSent;
 
 const uint16_t networkId = 10;
 const uint16_t anchorId = MASK_ANCHOR | MASK_RIGHT | 0;
@@ -107,9 +108,7 @@ void loop() {
   if (curMillis - lastBeacon > BEACON_PERIOD_MS) {
     transmitBeacon();
   }
-  if (expectedMsg == RANGE &&
-      curMillis - timePollAckSent.getAsMicroSeconds() * 1000
-      > TIMEOUT_PERIOD_MS) {
+  if (expectedMsg == RANGE && curMillis - lastSent > TIMEOUT_PERIOD_MS) {
     LOGFLN("timeout: RANGE");
     expectedMsg = POLL;
     tagId = TAG_NONE;
@@ -118,6 +117,7 @@ void loop() {
     sentFrame = false;
     if (GET_TYPE(txBuffer) == POLL_ACK) {
       DW1000.getTransmitTimestamp(timePollAckSent);
+      lastSent = millis();
     }
   }
   if (receivedFrame) {
