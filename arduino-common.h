@@ -32,13 +32,13 @@
 
 #define ADDR_SIZE 2
 #define GET_TYPE(buffer) (buffer[0])
-#define SET_TYPE(type) (txBuffer[0] = type)
-#define GET_SOURCE(nodeId) (memcpy(&nodeId, rxBuffer + 1, ADDR_SIZE))
-#define SET_SOURCE(nodeId) (memcpy(txBuffer + 1, &nodeId, ADDR_SIZE))
-#define SET_DEST(nodeId) (memcpy(txBuffer + 3, &nodeId, ADDR_SIZE))
-#define DOES_MATCH_SOURCE(nodeId) (!memcmp(rxBuffer + 1, &nodeId, ADDR_SIZE))
-#define DOES_MATCH_DEST(nodeId) (!memcmp(rxBuffer + 3, &nodeId, ADDR_SIZE))
 
 #define LOG(str) (Serial.println(F(str)))
+#define SET_TYPE(buffer, type) (buffer[0] = type)
+#define GET_SOURCE(buffer, nodeId) (memcpy(&nodeId, buffer + 1, ADDR_SIZE))
+#define SET_SOURCE(buffer, nodeId) (memcpy(buffer + 1, &nodeId, ADDR_SIZE))
+#define SET_DEST(buffer, nodeId) (memcpy(buffer + 3, &nodeId, ADDR_SIZE))
+#define DOES_MATCH_SOURCE(buffer, nodeId) (!memcmp(buffer + 1, &nodeId, ADDR_SIZE))
+#define DOES_MATCH_DEST(buffer, nodeId) (!memcmp(buffer + 3, &nodeId, ADDR_SIZE))
 
 #endif

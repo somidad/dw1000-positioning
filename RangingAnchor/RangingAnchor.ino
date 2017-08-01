@@ -42,9 +42,9 @@ void initReceiver() {
 void transmitBeacon() {
   DW1000.newTransmit();
   DW1000.setDefaults();
-  SET_TYPE(BEACON);
-  SET_SOURCE(anchorId);
-  SET_DEST(tagId);
+  SET_TYPE(txBuffer, BEACON);
+  SET_SOURCE(txBuffer, anchorId);
+  SET_DEST(txBuffer, tagId);
   DW1000Time delay = DW1000Time(random(0, BEACON_JITTER_MS),
                                 DW1000Time::MILLISECONDS);
   DW1000.setDelay(delay);
@@ -56,9 +56,9 @@ void transmitBeacon() {
 void transmitPollAck() {
   DW1000.newTransmit();
   DW1000.setDefaults();
-  SET_TYPE(POLL_ACK);
-  SET_SOURCE(anchorId);
-  SET_DEST(tagId);
+  SET_TYPE(txBuffer, POLL_ACK);
+  SET_SOURCE(txBuffer, anchorId);
+  SET_DEST(txBuffer, tagId);
   // delay the same amount as ranging tag
   DW1000Time delay = DW1000Time(REPLY_DELAY_MS, DW1000Time::MILLISECONDS);
   DW1000.setDelay(delay);
@@ -69,10 +69,10 @@ void transmitPollAck() {
 void transmitRangeReport() {
   DW1000.newTransmit();
   DW1000.setDefaults();
-  SET_TYPE(RANGE_REPORT);
-  SET_SOURCE(anchorId);
-  SET_DEST(tagId);
   timeRangeReceived.getTimestamp(txBuffer + 5);
+  SET_TYPE(txBuffer, RANGE_REPORT);
+  SET_SOURCE(txBuffer, anchorId);
+  SET_DEST(txBuffer, tagId);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
 }
@@ -117,15 +117,15 @@ void loop() {
   if (receivedFrame) {
     receivedFrame = false;
     byte msg = GET_TYPE(rxBuffer);
-    if (msg != expectedMsg || !DOES_MATCH_DEST(anchorId)) {
+    if (msg != expectedMsg || !DOES_MATCH_DEST(rxBuffer, anchorId)) {
       return;
     }
     if (msg == POLL) {
       DW1000.getReceiveTimestamp(timePollReceived);
       expectedMsg = RANGE;
-      GET_SOURCE(tagId);
+      GET_SOURCE(rxBuffer, tagId);
       transmitPollAck();
-    } else if (msg == RANGE && DOES_MATCH_SOURCE(tagId)) {
+    } else if (msg == RANGE && DOES_MATCH_SOURCE(rxBuffer, tagId)) {
       DW1000.getReceiveTimestamp(timeRangeReceived);
       expectedMsg = POLL;
       transmitRangeReport();
