@@ -124,6 +124,10 @@ void loop() {
     receivedFrame = false;
     DW1000.getData(rxBuffer, LEN_DATA);
     byte msg = GET_TYPE(rxBuffer);
+    uint16_t nodeSent;
+    GET_SOURCE(rxBuffer, nodeSent);
+    LOGTIME; LOGF("rx: "); LOG(msg); LOGF(" (expected: "); LOG(expectedMsg); LOGF(")");
+    LOGF(" from "); LOG(nodeSent); LOGF(" to "); LOGLN(anchorId);
     if (msg != expectedMsg || !DOES_MATCH_DEST(rxBuffer, anchorId)) {
       return;
     }
