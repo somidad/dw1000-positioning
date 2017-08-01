@@ -69,10 +69,12 @@ void transmitPollAck() {
 void transmitRangeReport() {
   DW1000.newTransmit();
   DW1000.setDefaults();
-  timeRangeReceived.getTimestamp(txBuffer + 5);
   SET_TYPE(txBuffer, RANGE_REPORT);
   SET_SOURCE(txBuffer, anchorId);
   SET_DEST(txBuffer, tagId);
+  timePollReceived.getTimestamp(txBuffer + 5);
+  timePollAckSent.getTimestamp(txBuffer + 10);
+  timeRangeReceived.getTimestamp(txBuffer + 15);
   DW1000.setData(txBuffer, LEN_DATA);
   DW1000.startTransmit();
 }
