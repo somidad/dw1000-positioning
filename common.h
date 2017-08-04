@@ -2,13 +2,9 @@
  * NOTE: Copy or (sym/hard)link this to the correspond directory
  */
 
-#ifndef ARDUINO_COMMON_H
-#define ARDUINO_COMMON_H
+#ifndef COMMON_H
+#define COMMON_H
 
-// pin config
-#define PIN_RST 9
-#define PIN_IRQ 2
-#define PIN_SS SS
 // message types
 #define POLL 0
 #define POLL_ACK 1
@@ -39,10 +35,4 @@
 #define DOES_MATCH_SOURCE(buffer, nodeId) (!memcmp(buffer + 1, &nodeId, ADDR_SIZE))
 #define DOES_MATCH_DEST(buffer, nodeId) (!memcmp(buffer + 3, &nodeId, ADDR_SIZE))
 
-#define LOGTIME Serial.print(millis()); Serial.print(" ");
-#define LOG(var) (Serial.print(var))
-#define LOGF(str) (Serial.print(F(str)))
-#define LOGLN(var) (Serial.println(var))
-#define LOGFLN(str) (Serial.println(F(str)))
-
-#endif
+#endif /* COMMON_H */

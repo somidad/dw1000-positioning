@@ -1,7 +1,8 @@
 #include <SPI.h>
 #include <DW1000.h>
 
-#include "arduino-common.h"
+#include "arduino.h"
+#include "common.h"
 
 byte expectedMsg = BEACON;
 
