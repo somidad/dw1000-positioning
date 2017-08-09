@@ -32,6 +32,7 @@ void handleSent() {
 
 void handleReceived() {
   receivedFrame = true;
+  LOGFLN("Received something");
 }
 
 void initReceiver() {
