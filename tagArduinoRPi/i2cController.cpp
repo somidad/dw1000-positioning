@@ -6,6 +6,7 @@
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
 
+#include "def.h"
 #include "i2c.h"
 
 #define NUM_ANCHORS 5
