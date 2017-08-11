@@ -25,9 +25,9 @@ const uint16_t networkId = 10;
 #define TYPE_ID   1
 #define TYPE_DIST 2
 
-char cmd;
-char state;
-char type;
+char cmd = CMD_NONE;
+char state = STATE_IDLE;
+char type = TYPE_NONE;
 
 unsigned char num_anchors = 0;
 unsigned char idx_anchor = 0;
@@ -48,8 +48,8 @@ unsigned long lastSent;
 byte txBuffer[FRAME_LEN];
 byte rxBuffer[FRAME_LEN];
 
-boolean sentFrame;
-boolean receivedFrame;
+boolean sentFrame = false;
+boolean receivedFrame = false;
 
 /***********************************************
  * I2C Raspberry Pi (master) - Arduino (slave) *
@@ -59,7 +59,7 @@ void i2cReceiveEvent(int bytes) {
     return;
   }
   cmd = Wire.read();
-  if (cmd == CMD_SCAN) {
+  if (cmd == CMD_SCAN && state == STATE_IDLE) {
     state = STATE_SCAN;
     return;
   }
@@ -136,7 +136,6 @@ void setupDW1000() {
 }
 
 void transmitPing() {
-  #warning "TODO: implement"
   DW1000.newTransmit();
   DW1000.setDefaults();
   txBuffer[0] = FTYPE_PING;
@@ -179,9 +178,7 @@ void calculateRange() {
 /********
  * Main *
  ********/
-
 void setup() {
-  state = STATE_IDLE;
   setupI2C();
   setupDW1000();
 }
@@ -192,11 +189,9 @@ void loop() {
     sentFrame = false;
     if (txBuffer[0] == FTYPE_POLL) {
       DW1000.getTransmitTimestamp(timePollSent);
-      return;
     }
     if (txBuffer[0] == FTYPE_RANGE) {
       DW1000.getTransmitTimestamp(timeRangeSent);
-      return;
     }
   }
   if (state == STATE_SCAN) {
@@ -211,7 +206,7 @@ void loop() {
   }
   if (state == STATE_PONG) {
     if (curMillis - lastSent > PONG_TIMEOUT_MS) {
-      if (!num_anchors) {
+      if (num_anchors < 3) {
         state = STATE_IDLE;
       } else {
         state = STATE_ROUNDROBIN;
@@ -225,7 +220,7 @@ void loop() {
       if (rxBuffer[0] != FTYPE_PONG) {
         return;
       }
-      if (memcpy(rxBuffer + 3, &tagId, ADDR_SIZE)) {
+      if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
         return;
       }
       memcpy(&anchorId[idx_anchor], rxBuffer + 1, ADDR_SIZE);
@@ -258,9 +253,10 @@ void loop() {
       if (memcpy(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
         return;
       }
-      if (memcpy(rxBuffer + 3, &tagId, ADDR_SIZE)) {
+      if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
         return;
       }
+      DW1000.getReceiveTimestamp(timePollAckReceived);
       transmitRange();
       state = STATE_RANGEREPORT;
       lastSent = millis();
@@ -282,7 +278,7 @@ void loop() {
       if (memcpy(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
         return;
       }
-      if (memcpy(rxBuffer + 3, &tagId, ADDR_SIZE)) {
+      if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
         return;
       }
       timePollReceived.setTimestamp(rxBuffer + 5);
