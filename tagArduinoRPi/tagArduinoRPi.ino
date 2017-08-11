@@ -55,8 +55,8 @@ void i2cReceiveEvent(int bytes) {
     state = STATE_SCAN;
     return;
   }
-  if (cmd == CMD_TYPE_NONE) {
-    type = TYPE_NONE;
+  if (cmd == CMD_DATA_READY) {
+    type = TYPE_DATA_READY;
     return;
   }
   if (cmd == CMD_TYPE_ID) {
@@ -72,6 +72,10 @@ void i2cReceiveEvent(int bytes) {
 void i2cRequestEvent() {
   if (state != STATE_IDLE || type == TYPE_NONE) {
     Wire.write(I2C_NODATA);
+    return;
+  }
+  if (type == TYPE_DATA_READY) {
+    Wire.write(I2C_DATARD);
     return;
   }
   if (type == TYPE_ID) {
@@ -177,6 +181,50 @@ void setup() {
 
 void loop() {
   curMillis = millis();
+  if (state == STATE_PONG && curMillis - lastSent > PONG_TIMEOUT_MS) {
+    if (num_anchors < 3) {
+      state = STATE_IDLE;
+      return;
+    } else {
+      idx_anchor = 0;
+      state = STATE_ROUNDROBIN;
+      return;
+    }
+  }
+  if (state == STATE_POLLACK && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
+    idx_anchor++;
+    state = STATE_ROUNDROBIN;
+    return;
+  }
+  if (state == STATE_RANGEREPORT && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
+    idx_anchor++;
+    state == STATE_ROUNDROBIN;
+    return;
+  }
+
+  if (state == STATE_SCAN) {
+    for (idx_anchor = 0; idx_anchor < NUM_ANCHORS; idx_anchor++) {
+      anchorId[idx_anchor] = ID_NONE;
+      distance[idx_anchor] = 0;
+    }
+    num_anchors = 0;
+    transmitPing();
+    lastSent = millis();
+    state = STATE_PONG;
+    return;
+  }
+
+  if (state == STATE_ROUNDROBIN) {
+    if (idx_anchor < num_anchors) {
+      transmitPoll();
+      lastSent = millis();
+      state = STATE_POLLACK;
+    } else {
+      state = STATE_IDLE;
+    }
+    return;
+  }
+
   if (sentFrame) {
     sentFrame = false;
     if (txBuffer[0] == FTYPE_POLL) {
@@ -186,29 +234,12 @@ void loop() {
       DW1000.getTransmitTimestamp(timeRangeSent);
     }
   }
-  if (state == STATE_SCAN) {
-    for (idx_anchor = 0; idx_anchor < NUM_ANCHORS; idx_anchor++) {
-      anchorId[idx_anchor] = ID_NONE;
-    }
-    transmitPing();
-    state = STATE_PONG;
-    num_anchors = 0;
-    lastSent = millis();
-    return;
-  }
-  if (state == STATE_PONG) {
-    if (curMillis - lastSent > PONG_TIMEOUT_MS) {
-      if (num_anchors < 3) {
-        state = STATE_IDLE;
-      } else {
-        state = STATE_ROUNDROBIN;
-        idx_anchor = 0;
-      }
-      return;
-    }
-    if (receivedFrame) {
-      receivedFrame = false;
-      DW1000.getData(rxBuffer, FRAME_LEN);
+
+  if (receivedFrame) {
+    receivedFrame = false;
+    DW1000.getData(rxBuffer, FRAME_LEN);
+
+    if (state == STATE_PONG) {
       if (rxBuffer[0] != FTYPE_PONG) {
         return;
       }
@@ -218,32 +249,14 @@ void loop() {
       #warning "This may store anchors with the same ID"
       memcpy(&anchorId[idx_anchor], rxBuffer + 1, ADDR_SIZE);
       num_anchors++;
-    }
-    return;
-  }
-  if (state == STATE_ROUNDROBIN) {
-    if (idx_anchor < num_anchors) {
-      transmitPoll();
-      state = STATE_POLLACK;
-      lastSent = millis();
-    } else {
-      state = STATE_IDLE;
-    }
-    return;
-  }
-  if (state == STATE_POLLACK) {
-    if (curMillis - lastSent > POLLACK_TIMEOUT_MS) {
-      state = STATE_ROUNDROBIN;
-      idx_anchor++;
       return;
     }
-    if (receivedFrame) {
-      receivedFrame = false;
-      DW1000.getData(rxBuffer, FRAME_LEN);
+
+    if (state == STATE_POLLACK) {
       if (rxBuffer[0] != FTYPE_POLLACK) {
         return;
       }
-      if (memcpy(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
+      if (memcmp(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
         return;
       }
       if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
@@ -253,22 +266,14 @@ void loop() {
       transmitRange();
       state = STATE_RANGEREPORT;
       lastSent = millis();
-    }
-    return;
-  }
-  if (state == STATE_RANGEREPORT) {
-    if (curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
-      state = STATE_ROUNDROBIN;
-      idx_anchor++;
       return;
     }
-    if (receivedFrame) {
-      receivedFrame = false;
-      DW1000.getData(rxBuffer, FRAME_LEN);
+
+    if (state == STATE_RANGEREPORT) {
       if (rxBuffer[0] != FTYPE_RANGEREPORT) {
         return;
       }
-      if (memcpy(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
+      if (memcmp(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
         return;
       }
       if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
@@ -279,7 +284,7 @@ void loop() {
       timeRangeReceived.setTimestamp(rxBuffer + 15);
       calculateRange();
       state = STATE_ROUNDROBIN;
+      return;
     }
-    return;
   }
 }
