@@ -116,6 +116,9 @@ void loop() {
   curMillis = millis();
   if (sentFrame) {
     sentFrame = false;
+    if (txBuffer[0] == FTYPE_PONG) {
+      state = STATE_IDLE;
+    }
     if (txBuffer[0] == FTYPE_POLLACK) {
       DW1000.getTransmitTimestamp(timePollAckSent);
     }
@@ -127,6 +130,7 @@ void loop() {
       memcpy(&sender, rxBuffer + 1, ADDR_SIZE);
       if (rxBuffer[0] == FTYPE_PING) {
         transmitPong();
+        state = STATE_PENDING_PONG;
         return;
       }
       if (rxBuffer[0] == FTYPE_POLL) {
@@ -138,6 +142,8 @@ void loop() {
       }
     }
     return;
+  }
+  if (state == STATE_PENDING_PONG) {
   }
   if (state == STATE_RANGE) {
     if (curMillis - lastSent > RANGE_TIMEOUT_MS) {

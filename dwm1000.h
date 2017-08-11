@@ -9,6 +9,7 @@
 #define STATE_POLLACK       5
 #define STATE_RANGE         6
 #define STATE_RANGEREPORT   7
+#define STATE_PENDING_PONG  8
 
 #define FTYPE_PING        0
 #define FTYPE_PONG        1
