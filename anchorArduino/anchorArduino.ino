@@ -70,6 +70,11 @@ void transmitPong() {
   txBuffer[0] = FTYPE_PONG;
   memcpy(txBuffer + 1, &anchorId, ADDR_SIZE);
   memcpy(txBuffer + 3, &sender, ADDR_SIZE);
+  /*
+   * Simple random backoff [0, PONG_TIMEOUT_MS - 10) milliseconds
+   */
+  DW1000Time random_delay = DW1000Time(random(0, PONG_TIMEOUT_MS - 10),
+    DW1000Time::MILLISECONDS);
   DW1000.setDelay();
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();

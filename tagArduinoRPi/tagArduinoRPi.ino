@@ -223,6 +223,7 @@ void loop() {
       if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
         return;
       }
+      #warning "This may store anchors with the same ID"
       memcpy(&anchorId[idx_anchor], rxBuffer + 1, ADDR_SIZE);
       num_anchors++;
     }
