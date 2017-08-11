@@ -3,6 +3,7 @@
 
 #include <DW1000.h>
 
+#include "i2c.h"
 #include "dwm1000.h"
 
 #define PIN_IRQ  2
@@ -14,16 +15,6 @@ const uint16_t tagId = 1;
 const uint16_t networkId = 10;
 
 #define NUM_ANCHORS 5
-
-#define CMD_NONE      0
-#define CMD_SCAN      1
-#define CMD_TYPE_NONE 2
-#define CMD_TYPE_ID   3
-#define CMD_TYPE_DIST 4
-
-#define TYPE_NONE 0
-#define TYPE_ID   1
-#define TYPE_DIST 2
 
 char cmd = CMD_NONE;
 char state = STATE_IDLE;
@@ -79,7 +70,7 @@ void i2cReceiveEvent(int bytes) {
 
 void i2cRequestEvent() {
   if (state != STATE_IDLE || type == TYPE_NONE) {
-    Wire.write(0);
+    Wire.write(I2C_NODATA);
     return;
   }
   if (type == TYPE_ID) {
