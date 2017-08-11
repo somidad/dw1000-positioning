@@ -3,6 +3,8 @@
 
 #include <DW1000.h>
 
+#include "dwm1000.h"
+
 #define PIN_IRQ  2
 #define PIN_RST  9
 #define PIN_SS  SS
@@ -10,9 +12,6 @@
 /* Edit tagId */
 const uint16_t tagId = 1;
 const uint16_t networkId = 10;
-#define ADDR_SIZE 2
-
-#define ID_NONE 0
 
 #define NUM_ANCHORS 5
 
@@ -22,33 +21,9 @@ const uint16_t networkId = 10;
 #define CMD_TYPE_ID   3
 #define CMD_TYPE_DIST 4
 
-#define STATE_IDLE          0
-#define STATE_SCAN          1
-#define STATE_PONG          2
-#define STATE_ROUNDROBIN    3
-#define STATE_POLL          4
-#define STATE_POLLACK       5
-#define STATE_RANGE         6
-#define STATE_RANGEREPORT   7
-
 #define TYPE_NONE 0
 #define TYPE_ID   1
 #define TYPE_DIST 2
-
-#define FTYPE_PING        0
-#define FTYPE_PONG        1
-#define FTYPE_POLL        2
-#define FTYPE_POLLACK     3
-#define FTYPE_RANGE       4
-#define FTYPE_RANGEREPORT 5
-
-#define FRAME_LEN 20
-
-#warning "TODO: Temporary values"
-#define PONG_TIMEOUT_MS        100
-#define POLLACK_TIMEOUT_MS      10
-#define RANGEREPORT_TIMEOUT_MS  10
-#define REPLY_DELAY_MS           3
 
 char cmd;
 char state;
