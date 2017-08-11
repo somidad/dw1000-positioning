@@ -17,18 +17,35 @@ void printUsage() {
 
 int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anchors) {
   uint8_t data[32];
+
   wiringPiI2CWrite(i2cFd, CMD_DATA_READY);
-  if (!wiringPiI2CRead(i2cFd)) {
+  data[0] = wiringPiI2CRead(i2cFd);
+  if (data[0] == I2C_NODATA) {
     return -EBUSY;
   }
+  if (data[0] != I2C_DATARD) {
+    return -EINVAL;
+  }
+
   wiringPiI2CWrite(i2cFd, CMD_TYPE_ID);
   for (int i = 0; i < 2 * NUM_ANCHORS; i++) {
     data[i] = wiringPiI2CRead(i2cFd);
   }
+  for (int i = 0; i < NUM_ANCHORS; i++) {
+    anchorId[i] = ID_NONE;
+    #warning "Must check endianess and other things"
+    memcpy(anchorId + i, data + 2 * i, 2);
+  }
+
   wiringPiI2CWrite(i2cFd, CMD_TYPE_DIST);
   for (int i = 0; i < 4 * NUM_ANCHORS; i++) {
     data[i] = wiringPiI2CRead(i2cFd);
   }
+  for (int i = 0; i < NUM_ANCHORS; i++) {
+    #warning "Must check endianess and other things"
+    memcpy(distance + i, data + 4 * i, 4);
+  }
+
   return 0;
 }
 
@@ -56,6 +73,14 @@ int main(int argc, char* argv[]) {
     if (ret == -EBUSY) {
       cout << "Resource busy. Maybe ranging is in progress. Try again later" << endl;
       return ret;
+    }
+    if (ret == -EINVAL) {
+      cout << "Somethings wrong";
+      return ret;
+    }
+
+    for (int i = 0; i < NUM_ANCHORS; i++) {
+      cout << "Anchod ID: " << anchorId[i] << ", Distnace: " << distance[i] << endl;
     }
   }
 
