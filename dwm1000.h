@@ -26,8 +26,5 @@
 #define RANGE_TIMEOUT_MS        10
 #define RANGEREPORT_TIMEOUT_MS  10
 #define REPLY_DELAY_MS           3
-#define ADDR_SIZE 2
-
-#define ID_NONE 0
 
 #endif /* __DWM1000_H */

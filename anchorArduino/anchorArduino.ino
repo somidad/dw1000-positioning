@@ -2,6 +2,7 @@
 
 #include <DW1000.h>
 
+#include "def.h"
 #include "dwm1000.h"
 
 #define PIN_IRQ  2

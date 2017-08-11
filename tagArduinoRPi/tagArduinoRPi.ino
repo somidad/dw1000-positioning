@@ -3,6 +3,7 @@
 
 #include <DW1000.h>
 
+#include "def.h"
 #include "i2c.h"
 #include "dwm1000.h"
 
