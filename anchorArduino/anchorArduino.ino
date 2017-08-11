@@ -109,32 +109,47 @@ void transmitRangeReport() {
  * Main *
  ********/
 void setup() {
-  state = STATE_IDLE;
   setupDW1000();
 }
 
 void loop() {
   curMillis = millis();
+  if (state == STATE_RANGE && curMillis - lastSent > RANGE_TIMEOUT_MS) {
+    /*
+     * Check RANGE message timeout when state is waiting for RANGE message
+     */
+    state = STATE_IDLE;
+    return;
+  }
+
   if (sentFrame) {
     sentFrame = false;
-    if (txBuffer[0] == FTYPE_PONG) {
+
+    if (state == STATE_PENDING_PONG && txBuffer[0] == FTYPE_PONG) {
       state = STATE_IDLE;
+      return;
     }
+
     if (txBuffer[0] == FTYPE_POLLACK) {
       DW1000.getTransmitTimestamp(timePollAckSent);
     }
   }
-  if (state == STATE_IDLE) {
-    if (receivedFrame) {
-      receivedFrame = false;
-      DW1000.getData(rxBuffer, FRAME_LEN);
-      memcpy(&sender, rxBuffer + 1, ADDR_SIZE);
+
+  if (receivedFrame) {
+    receivedFrame = false;
+    DW1000.getData(rxBuffer, FRAME_LEN);
+    memcpy(&sender, rxBuffer + 1, ADDR_SIZE);
+
+    if (state == STATE_IDLE) {
       if (rxBuffer[0] == FTYPE_PING) {
         transmitPong();
         state = STATE_PENDING_PONG;
         return;
       }
       if (rxBuffer[0] == FTYPE_POLL) {
+        if (memcmp(rxBuffer + 3, &anchorId, ADDR_SIZE)) {
+          return;
+        }
         DW1000.getReceiveTimestamp(timePollReceived);
         tagCounterPart = sender;
         transmitPollAck();
@@ -142,18 +157,16 @@ void loop() {
         return;
       }
     }
-    return;
-  }
-  if (state == STATE_PENDING_PONG) {
-  }
-  if (state == STATE_RANGE) {
-    if (curMillis - lastSent > RANGE_TIMEOUT_MS) {
-      state = STATE_IDLE;
+
+    if (state == STATE_PENDING_PONG) {
+      /*
+       * PONG message is pending to be transmitted
+       * Anchor should ignore all other messages
+       */
       return;
     }
-    if(receivedFrame) {
-      receivedFrame = false;
-      DW1000.getData(rxBuffer, FRAME_LEN);
+
+    if (state == STATE_RANGE) {
       if (rxBuffer[0] != FTYPE_RANGE) {
         return;
       }
@@ -163,7 +176,7 @@ void loop() {
       DW1000.getReceiveTimestamp(timeRangeReceived);
       transmitRangeReport();
       state = STATE_IDLE;
+      return;
     }
-    return;
   }
 }
