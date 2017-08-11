@@ -23,6 +23,7 @@
 #warning "TODO: Temporary values"
 #define PONG_TIMEOUT_MS        100
 #define POLLACK_TIMEOUT_MS      10
+#define RANGE_TIMEOUT_MS        10
 #define RANGEREPORT_TIMEOUT_MS  10
 #define REPLY_DELAY_MS           3
 #define ADDR_SIZE 2

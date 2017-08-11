@@ -75,7 +75,7 @@ void transmitPong() {
    */
   DW1000Time random_delay = DW1000Time(random(0, PONG_TIMEOUT_MS - 10),
     DW1000Time::MILLISECONDS);
-  DW1000.setDelay();
+  DW1000.setDelay(random_delay);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
 }
