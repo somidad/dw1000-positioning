@@ -3,8 +3,13 @@
 #include <cstring>
 #include <iostream>
 
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
+// I2C
+#include <linux/i2c-dev.h> // I2C_SLAVE
+#include <fcntl.h>         // open, O_RDWR
+#include <sys/ioctl.h>     // ioctl
+#include <unistd.h>        // close
+#define I2CDEV "/dev/i2c-1"
+#define I2CSLAVEADDR 0x04
 
 #include "def.h"
 #include "i2c.h"
@@ -13,14 +18,23 @@
 
 using namespace std;
 
+uint8_t cmd_scan = CMD_SCAN;
+uint8_t cmd_data_ready = CMD_DATA_READY;
+uint8_t cmd_type_id = CMD_TYPE_ID;
+uint8_t cmd_type_dist = CMD_TYPE_DIST;
+
 void printUsage() {
 }
 
 int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anchors) {
   uint8_t data[32];
 
-  wiringPiI2CWrite(i2cFd, CMD_DATA_READY);
-  data[0] = wiringPiI2CRead(i2cFd);
+  if (write(i2cFd, &cmd_data_ready, 1) != 1) {
+    return -1
+  }
+  if (read(i2cFd, data, 1) != 1) {
+    return -1;
+  }
   if (data[0] == I2C_NODATA) {
     return -EBUSY;
   }
@@ -28,23 +42,27 @@ int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anch
     return -EINVAL;
   }
 
-  wiringPiI2CWrite(i2cFd, CMD_TYPE_ID);
-  for (int i = 0; i < 2 * NUM_ANCHORS; i++) {
-    data[i] = wiringPiI2CRead(i2cFd);
+  if (write(i2cFd, &cmd_type_id, 1) != 1) {
+    return -1;
+  }
+  if (read(i2cFd, data, 2 * NUM_ANCHORS) != 2 * NUM_ANCHORS) {
+    return -1;
   }
   for (int i = 0; i < NUM_ANCHORS; i++) {
     anchorId[i] = ID_NONE;
-    #warning "Must check endianess and other things"
-    memcpy(anchorId + i, data + 2 * i, 2);
+    /*& Arduino uses little endian */
+    anchorId[i] = (data[1] << 8) | data[0];
   }
 
-  wiringPiI2CWrite(i2cFd, CMD_TYPE_DIST);
-  for (int i = 0; i < 4 * NUM_ANCHORS; i++) {
-    data[i] = wiringPiI2CRead(i2cFd);
+  if (write(i2cFd, &cmd_type_dist, 1) != 1) {
+    return -1;
+  }
+  if (read(i2cFd, data, 4 * NUM_ANCHORS) != 4 * NUM_ANCHORS) {
+    return -1;
   }
   for (int i = 0; i < NUM_ANCHORS; i++) {
-    #warning "Must check endianess and other things"
-    memcpy(distance + i, data + 4 * i, 4);
+    /* Arduino uses little endian */
+    distance[i] = (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
   }
 
   return 0;
@@ -56,18 +74,18 @@ int main(int argc, char* argv[]) {
      return EINVAL;
   }
 
-  wiringPiSetupGpio();
-  int i2cFd = wiringPiI2CSetup(0x04);
+  int i2cFd = open(I2CDEV, O_RDWR);
   if (i2cFd < 0) {
+    cout << "Can't open I2C device (" << I2CDEV << ")" << endl;
     return EBADF;
   }
+  ioctl(i2cdev, I2C_SLAVE, I2CSLAVEADDR);
 
-  uint8_t data[32] = {0, };
   uint16_t anchorId[NUM_ANCHORS] = {0, };
   float distance[NUM_ANCHORS] = {0, };
 
   if (strcmp(argv[1], "scan")) {
-    wiringPiI2CWrite(i2cFd, CMD_SCAN);
+    write(i2cFd, &cmd_scan, 1);
   }
   if (strcmp(argv[1], "read")) {
     int ret = readMeasurement(i2cFd, anchorId, distance, NUM_ANCHORS);
@@ -79,11 +97,16 @@ int main(int argc, char* argv[]) {
       cout << "Somethings wrong";
       return ret;
     }
+    if (ret < 0) {
+      cout << "Somethings wrong";
+      return ret;
+    }
 
     for (int i = 0; i < NUM_ANCHORS; i++) {
       cout << "Anchod ID: " << anchorId[i] << ", Distnace: " << distance[i] << endl;
     }
   }
+  close(i2cFd);
 
   return 0;
 }
