@@ -24,6 +24,9 @@ uint8_t cmd_type_id = CMD_TYPE_ID;
 uint8_t cmd_type_dist = CMD_TYPE_DIST;
 
 void printUsage() {
+  cout << "Usage" << endl;
+  cout << "  i2cController scan: commands Arduino to scan" << endl;
+  cout << "  i2cController read: requests Arduino for ranging data" << endl;
 }
 
 int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anchors) {
