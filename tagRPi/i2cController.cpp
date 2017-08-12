@@ -30,7 +30,7 @@ int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anch
   uint8_t data[32];
 
   if (write(i2cFd, &cmd_data_ready, 1) != 1) {
-    return -1
+    return -1;
   }
   if (read(i2cFd, data, 1) != 1) {
     return -1;
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     cout << "Can't open I2C device (" << I2CDEV << ")" << endl;
     return EBADF;
   }
-  ioctl(i2cdev, I2C_SLAVE, I2CSLAVEADDR);
+  ioctl(i2cFd, I2C_SLAVE, I2CSLAVEADDR);
 
   uint16_t anchorId[NUM_ANCHORS] = {0, };
   float distance[NUM_ANCHORS] = {0, };
