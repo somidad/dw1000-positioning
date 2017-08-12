@@ -87,10 +87,10 @@ int main(int argc, char* argv[]) {
   uint16_t anchorId[NUM_ANCHORS] = {0, };
   float distance[NUM_ANCHORS] = {0, };
 
-  if (strcmp(argv[1], "scan")) {
+  if (!strcmp(argv[1], "scan")) {
     write(i2cFd, &cmd_scan, 1);
   }
-  if (strcmp(argv[1], "read")) {
+  if (!strcmp(argv[1], "read")) {
     int ret = readMeasurement(i2cFd, anchorId, distance, NUM_ANCHORS);
     if (ret == -EBUSY) {
       cout << "Resource busy. Maybe ranging is in progress. Try again later" << endl;
