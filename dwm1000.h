@@ -27,4 +27,10 @@
 #define RANGEREPORT_TIMEOUT_MS  10
 #define REPLY_DELAY_MS           3
 
+#define SET_SRC(buf, addr, sz) memcpy(buf + 1, &addr, sz)
+#define SET_DST(buf, addr, sz) memcpy(buf + 3, &addr, sz)
+#define GET_SRC(buf, addr, sz) memcpy(&addr, buf + 1, sz)
+#define DOES_SRC_MATCH(buf, addr, sz) !memcmp(buf + 1, &addr, sz)
+#define DOES_DST_MATCH(buf, addr, sz) !memcmp(buf + 3, &addr, sz)
+
 #endif /* __DWM1000_H */

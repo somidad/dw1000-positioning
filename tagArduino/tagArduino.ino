@@ -135,7 +135,7 @@ void transmitPing() {
   DW1000.newTransmit();
   DW1000.setDefaults();
   txBuffer[0] = FTYPE_PING;
-  memcpy(txBuffer + 1, &tagId, ADDR_SIZE);
+  SET_SRC(txBuffer, tagId, ADDR_SIZE);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
 }
@@ -144,8 +144,8 @@ void transmitPoll() {
   DW1000.newTransmit();
   DW1000.setDefaults();
   txBuffer[0] = FTYPE_POLL;
-  memcpy(txBuffer + 1, &tagId, ADDR_SIZE);
-  memcpy(txBuffer + 3, &anchorId[idx_anchor], ADDR_SIZE);
+  SET_SRC(txBuffer, tagId, ADDR_SIZE);
+  SET_DST(txBuffer, anchorId[idx_anchor], ADDR_SIZE);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
 }
@@ -154,8 +154,8 @@ void transmitRange() {
   DW1000.newTransmit();
   DW1000.setDefaults();
   txBuffer[0] = FTYPE_RANGE;
-  memcpy(txBuffer + 1, &tagId, ADDR_SIZE);
-  memcpy(txBuffer + 3, &anchorId[idx_anchor], ADDR_SIZE);
+  SET_SRC(txBuffer, tagId, ADDR_SIZE);
+  SET_DST(txBuffer, anchorId[idx_anchor], ADDR_SIZE);
   DW1000.setDelay(reply_delay);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
@@ -243,7 +243,7 @@ void loop() {
       if (rxBuffer[0] != FTYPE_PONG) {
         return;
       }
-      if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
+      if (!DOES_DST_MATCH(rxBuffer, tagId, ADDR_SIZE)) {
         return;
       }
       #warning "This may store anchors with the same ID"
@@ -256,10 +256,10 @@ void loop() {
       if (rxBuffer[0] != FTYPE_POLLACK) {
         return;
       }
-      if (memcmp(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
+      if (!DOES_SRC_MATCH(rxBuffer, anchorId[idx_anchor], ADDR_SIZE)) {
         return;
       }
-      if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
+      if (!DOES_DST_MATCH(rxBuffer, tagId, ADDR_SIZE)) {
         return;
       }
       DW1000.getReceiveTimestamp(timePollAckReceived);
@@ -273,10 +273,10 @@ void loop() {
       if (rxBuffer[0] != FTYPE_RANGEREPORT) {
         return;
       }
-      if (memcmp(rxBuffer + 1, &anchorId[idx_anchor], ADDR_SIZE)) {
+      if (!DOES_SRC_MATCH(rxBuffer, anchorId[idx_anchor], ADDR_SIZE)) {
         return;
       }
-      if (memcmp(rxBuffer + 3, &tagId, ADDR_SIZE)) {
+      if (!DOES_DST_MATCH(rxBuffer, tagId, ADDR_SIZE)) {
         return;
       }
       timePollReceived.setTimestamp(rxBuffer + 5);

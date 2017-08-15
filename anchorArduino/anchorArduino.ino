@@ -69,8 +69,8 @@ void transmitPong() {
   DW1000.newTransmit();
   DW1000.setDefaults();
   txBuffer[0] = FTYPE_PONG;
-  memcpy(txBuffer + 1, &anchorId, ADDR_SIZE);
-  memcpy(txBuffer + 3, &sender, ADDR_SIZE);
+  SET_SRC(txBuffer, anchorId, ADDR_SIZE);
+  SET_DST(txBuffer, sender, ADDR_SIZE);
   /*
    * Simple random backoff [0, PONG_TIMEOUT_MS - 10) milliseconds
    */
@@ -85,8 +85,8 @@ void transmitPollAck() {
   DW1000.newTransmit();
   DW1000.setDefaults();
   txBuffer[0] = FTYPE_POLLACK;
-  memcpy(txBuffer + 1, &anchorId, ADDR_SIZE);
-  memcpy(txBuffer + 3, &tagCounterPart, ADDR_SIZE);
+  SET_SRC(txBuffer, anchorId, ADDR_SIZE);
+  SET_DST(txBuffer, tagCounterPart, ADDR_SIZE);
   DW1000.setDelay(reply_delay);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
@@ -96,8 +96,8 @@ void transmitRangeReport() {
   DW1000.newTransmit();
   DW1000.setDefaults();
   txBuffer[0] = FTYPE_RANGEREPORT;
-  memcpy(txBuffer + 1, &anchorId, ADDR_SIZE);
-  memcpy(txBuffer + 3, &tagCounterPart, ADDR_SIZE);
+  SET_SRC(txBuffer, anchorId, ADDR_SIZE);
+  SET_DST(txBuffer, tagCounterPart, ADDR_SIZE);
   timePollReceived.getTimestamp(txBuffer + 5);
   timePollAckSent.getTimestamp(txBuffer + 10);
   timeRangeReceived.getTimestamp(txBuffer + 15);
@@ -138,7 +138,7 @@ void loop() {
   if (receivedFrame) {
     receivedFrame = false;
     DW1000.getData(rxBuffer, FRAME_LEN);
-    memcpy(&sender, rxBuffer + 1, ADDR_SIZE);
+    GET_SRC(rxBuffer, sender, ADDR_SIZE);
 
     if (state == STATE_IDLE) {
       if (rxBuffer[0] == FTYPE_PING) {
@@ -147,7 +147,7 @@ void loop() {
         return;
       }
       if (rxBuffer[0] == FTYPE_POLL) {
-        if (memcmp(rxBuffer + 3, &anchorId, ADDR_SIZE)) {
+        if (!DOES_DST_MATCH(rxBuffer, anchorId, ADDR_SIZE)) {
           return;
         }
         DW1000.getReceiveTimestamp(timePollReceived);
@@ -170,7 +170,7 @@ void loop() {
       if (rxBuffer[0] != FTYPE_RANGE) {
         return;
       }
-      if (memcmp(rxBuffer + 1, &tagCounterPart, ADDR_SIZE)) {
+      if (!DOES_SRC_MATCH(rxBuffer, tagCounterPart, ADDR_SIZE)) {
         return;
       }
       DW1000.getReceiveTimestamp(timeRangeReceived);
