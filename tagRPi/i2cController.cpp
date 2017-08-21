@@ -29,7 +29,7 @@ void printUsage() {
   cout << "  i2cController read: requests Arduino for ranging data" << endl;
 }
 
-int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anchors) {
+int isReady(int i2cFd) {
   uint8_t data[32];
 
   if (write(i2cFd, &cmd_data_ready, 1) != 1) {
@@ -44,28 +44,56 @@ int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anch
   if (data[0] != I2C_DATARD) {
     return -EINVAL;
   }
+}
+
+int getAnchorIds(int i2cFd, uint16_t* anchorId, int num_anchors) {
+  uint8_t data[32];
 
   if (write(i2cFd, &cmd_type_id, 1) != 1) {
     return -1;
   }
-  if (read(i2cFd, data, 2 * NUM_ANCHORS) != 2 * NUM_ANCHORS) {
+  if (read(i2cFd, data, 2 * num_anchors) != 2 * num_anchors) {
     return -1;
   }
-  for (int i = 0; i < NUM_ANCHORS; i++) {
+  for (int i = 0; i < num_anchors; i++) {
     anchorId[i] = ID_NONE;
     /*& Arduino uses little endian */
     anchorId[i] = (data[1] << 8) | data[0];
   }
+}
+
+int getDists(int i2cFd, uint16_t* distance, int num_anchors) {
+  uint8_t data[32];
 
   if (write(i2cFd, &cmd_type_dist, 1) != 1) {
     return -1;
   }
-  if (read(i2cFd, data, 4 * NUM_ANCHORS) != 4 * NUM_ANCHORS) {
+  if (read(i2cFd, data, 4 * num_anchors) != 4 * num_anchors) {
     return -1;
   }
-  for (int i = 0; i < NUM_ANCHORS; i++) {
+  for (int i = 0; i < num_anchors; i++) {
     /* Arduino uses little endian */
     distance[i] = (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
+  }
+}
+
+int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance, int num_anchors) {
+  int ret;
+  uint8_t data[32];
+
+  ret = isReady(i2cFd);
+  if (ret < 0) {
+    return ret;
+  }
+
+  ret = getAnchorIds(i2cFd, anchorId, num_anchors);
+  if (ret < 0) {
+    return ret;
+  }
+
+  ret = getDists(i2cFd, distance, num_anchors);
+  if (ret < 0) {
+    return ret;
   }
 
   return 0;
