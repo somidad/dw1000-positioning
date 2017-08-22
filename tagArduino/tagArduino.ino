@@ -280,6 +280,9 @@ void loop() {
 #endif /* DEBUG */
     sentFrame = false;
     if (txBuffer[0] == FTYPE_PING) {
+#if DEBUG
+      Serial.println(F("  PING sent"));
+#endif /* DEBUG */
       lastSent = millis();
     }
     if (txBuffer[0] == FTYPE_POLL) {
@@ -324,6 +327,13 @@ void loop() {
       #warning "This may store anchors with the same ID"
       memcpy(&anchorId[idx_anchor], rxBuffer + 1, ADDR_SIZE);
       num_anchors++;
+#if DEBUG
+      Serial.print(F("    Anchor"));
+      Serial.print(idx_anchor);
+      Serial.print(F("("));
+      Serial.print(anchorId[idx_anchor]);
+      Serial.println(F(") found"));
+#endif /* DEBUG */
       return;
     }
 
