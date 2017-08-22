@@ -1,3 +1,4 @@
+#include <bitset>
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
@@ -32,16 +33,23 @@ void printUsage() {
 int isReady(int i2cFd) {
   uint8_t data[32];
 
+  cout << "Checking data is ready..." << endl;
   if (write(i2cFd, &cmd_data_ready, 1) != 1) {
+    cout << "Write CMD_DATA_READY failed" << endl;
     return -1;
   }
   if (read(i2cFd, data, 1) != 1) {
+    cout << "Reading failed" << endl;
     return -1;
   }
   if (data[0] == I2C_NODATA) {
+    cout << "No data available" << endl;
     return -EBUSY;
   }
   if (data[0] != I2C_DATARD) {
+    cout << "Some other value than DATARD"
+         << " (received: 0b" << bitset<8>(data[0])
+         << ", expected: 0b" << bitset<8>(I2C_DATARD) << ")" << endl;
     return -EINVAL;
   }
 }
@@ -49,10 +57,13 @@ int isReady(int i2cFd) {
 int getAnchorIds(int i2cFd, uint16_t* anchorId, int num_anchors) {
   uint8_t data[32];
 
+  cout << "Getting Anchors' IDs..." << endl;
   if (write(i2cFd, &cmd_type_id, 1) != 1) {
+    cout << "Writing CMD_TYPE_ID failed" << endl;
     return -1;
   }
   if (read(i2cFd, data, 2 * num_anchors) != 2 * num_anchors) {
+    cout << "Reading Anchors' IDs failed" << endl;
     return -1;
   }
   for (int i = 0; i < num_anchors; i++) {
@@ -65,10 +76,13 @@ int getAnchorIds(int i2cFd, uint16_t* anchorId, int num_anchors) {
 int getDists(int i2cFd, float* distance, int num_anchors) {
   uint8_t data[32];
 
+  cout << "Getting distance measurements..." << endl;
   if (write(i2cFd, &cmd_type_dist, 1) != 1) {
+    cout << "Writing CMD_TYPE_DIST failed" << endl;
     return -1;
   }
   if (read(i2cFd, data, 4 * num_anchors) != 4 * num_anchors) {
+    cout << "Reading distance measurements failed" << endl;
     return -1;
   }
   for (int i = 0; i < num_anchors; i++) {
@@ -116,25 +130,30 @@ int main(int argc, char* argv[]) {
   float distance[NUM_ANCHORS] = {0, };
 
   if (!strcmp(argv[1], "scan")) {
-    write(i2cFd, &cmd_scan, 1);
+    cout << "Triggering scan..." << endl;
+    if (write(i2cFd, &cmd_scan, 1) != 1) {
+      cout << "Somethings wrong" << endl;
+    }
   }
   if (!strcmp(argv[1], "read")) {
+    cout << "Reading measurement..." << endl;
     int ret = readMeasurement(i2cFd, anchorId, distance, NUM_ANCHORS);
     if (ret == -EBUSY) {
       cout << "Resource busy. Maybe ranging is in progress. Try again later" << endl;
       return ret;
     }
     if (ret == -EINVAL) {
-      cout << "Somethings wrong";
+      cout << "Somethings wrong" << endl;
       return ret;
     }
     if (ret < 0) {
-      cout << "Somethings wrong";
+      cout << "Somethings wrong" << endl;
       return ret;
     }
 
     for (int i = 0; i < NUM_ANCHORS; i++) {
-      cout << "Anchod ID: " << anchorId[i] << ", Distnace: " << distance[i] << endl;
+      cout << "Anchor ID: " << anchorId[i] << " (0b" << bitset<16>(anchorId[i]) << ")"
+           << ", Distnace: " << distance[i] << " (0b" << bitset<32>(distance[i]) << ")" << endl;
     }
   }
   close(i2cFd);
