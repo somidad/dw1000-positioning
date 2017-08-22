@@ -7,6 +7,8 @@
 #include "i2c.h"
 #include "dwm1000.h"
 
+#define DEBUG true
+
 #define PIN_IRQ  2
 #define PIN_RST  9
 #define PIN_SS  SS
@@ -54,6 +56,9 @@ void i2cReceiveEvent(int bytes) {
     cmd = Wire.read();
   }
   if (cmd == CMD_SCAN && state == STATE_IDLE) {
+#if DEBUG
+    Serial.println(F("Transitting to SCAN state..."));
+#endif /* DEBUG */
     state = STATE_SCAN;
     return;
   }
@@ -179,37 +184,66 @@ void calculateRange() {
 void setup() {
   setupI2C();
   setupDW1000();
+#if DEBUG
+  Serial.begin(115200);
+  Serial.println(F("Setup finished"));
+  Serial.println(F("=============="));
+#endif /* DEBUG */
 }
 
 void loop() {
   curMillis = millis();
   if (state == STATE_PONG && curMillis - lastSent > PONG_TIMEOUT_MS) {
+#if DEBUG
+    Serial.println(F("PONG timeout"));
+#endif /* DEBUG */
     if (num_anchors < 3) {
+#if DEBUG
+      Serial.println(F("  Not enough anchors scanned. Return to IDLE"));
+#endif /* DEBUG */
       state = STATE_IDLE;
       return;
     } else {
+#if DEBUG
+      Serial.println(F("  Starting ROUNDROBIN..."));
+#endif /* DEBUG */
       idx_anchor = 0;
       state = STATE_ROUNDROBIN;
       return;
     }
   }
   if (state == STATE_POLLACK && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
+#if DEBUG
+    Serial.println(F("POLLACK timeout"));
+    Serial.println(F("  Return to ROUNDROBIN"));
+#endif /* DEBUG */
     idx_anchor++;
     state = STATE_ROUNDROBIN;
     return;
   }
   if (state == STATE_RANGEREPORT && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
+#if DEBUG
+    Serial.println(F("RANGEREPORT timeout"));
+    Serial.println(F("  Return to ROUNDROBIN"));
+#endif /* DEBUG */
     idx_anchor++;
     state == STATE_ROUNDROBIN;
     return;
   }
 
   if (state == STATE_SCAN) {
+#if DEBUG
+    Serial.println(F("State: SCAN"));
+    Serial.println(F("  Initializing arrays..."));
+#endif /* DEBUG */
     for (idx_anchor = 0; idx_anchor < NUM_ANCHORS; idx_anchor++) {
       anchorId[idx_anchor] = ID_NONE;
       distance[idx_anchor] = 0;
     }
     num_anchors = 0;
+#if DEBUG
+    Serial.println(F("  Sending PING..."));
+#endif /* DEBUG */
     transmitPing();
     lastSent = millis();
     state = STATE_PONG;
@@ -217,35 +251,67 @@ void loop() {
   }
 
   if (state == STATE_ROUNDROBIN) {
+#if DEBUG
+    Serial.println(F("State: ROUNDROBIN"));
+    Serial.print(F("  idx_anchor: "));
+    Serial.println(idx_anchor);
+#endif /* DEBUG */
     if (idx_anchor < num_anchors) {
+#if DEBUG
+    Serial.println(F("  Sending POLL..."));
+#endif /* DEBUG */
       transmitPoll();
       lastSent = millis();
       state = STATE_POLLACK;
     } else {
+#if DEBUG
+      Serial.println(F("  Ranging all anchors. Return to IDLE"));
+#endif /* DEBUG */
       state = STATE_IDLE;
     }
     return;
   }
 
   if (sentFrame) {
+#if DEBUG
+    Serial.println(F("Sent something"));
+#endif /* DEBUG */
     sentFrame = false;
     if (txBuffer[0] == FTYPE_POLL) {
+#if DEBUG
+      Serial.println(F("  POLL sent. Getting timestamp..."));
+#endif /* DEBUG */
       DW1000.getTransmitTimestamp(timePollSent);
     }
     if (txBuffer[0] == FTYPE_RANGE) {
+#if DEBUG
+      Serial.println(F("  RANGE sent. Getting timestamp..."));
+#endif /* DEBUG */
       DW1000.getTransmitTimestamp(timeRangeSent);
     }
   }
 
   if (receivedFrame) {
+#if DEBUG
+    Serial.println(F("Received something"));
+#endif /* DEBUG */
     receivedFrame = false;
     DW1000.getData(rxBuffer, FRAME_LEN);
 
     if (state == STATE_PONG) {
+#if DEBUG
+      Serial.println(F("  State: PONG"));
+#endif /* DEBUG */
       if (rxBuffer[0] != FTYPE_PONG) {
+#if DEBUG
+        Serial.println(F("    Not PONG"));
+#endif /* DEBUG */
         return;
       }
       if (!DOES_DST_MATCH(rxBuffer, tagId, ADDR_SIZE)) {
+#if DEBUG
+        Serial.println(F("    Not for me"));
+#endif /* DEBUG */
         return;
       }
       #warning "This may store anchors with the same ID"
@@ -255,16 +321,34 @@ void loop() {
     }
 
     if (state == STATE_POLLACK) {
+#if DEBUG
+      Serial.println(F("  State: POLLAKC"));
+#endif /* DEBUG */
       if (rxBuffer[0] != FTYPE_POLLACK) {
+#if DEBUG
+        Serial.println(F("    Not POLLACK"));
+#endif /* DEBUG */
         return;
       }
       if (!DOES_SRC_MATCH(rxBuffer, anchorId[idx_anchor], ADDR_SIZE)) {
+#if DEBUG
+        Serial.println(F("    Not from counter part"));
+#endif /* DEBUG */
         return;
       }
       if (!DOES_DST_MATCH(rxBuffer, tagId, ADDR_SIZE)) {
+#if DEBUG
+        Serial.println(F("    Not for me"));
+#endif /* DEBUG */
         return;
       }
+#if DEBUG
+      Serial.println(F("    Received POLLACK. Getting timestamp..."));
+#endif /* DEBUG */
       DW1000.getReceiveTimestamp(timePollAckReceived);
+#if DEBUG
+      Serial.println(F("    Sending RANGE..."));
+#endif /* DEBUG */
       transmitRange();
       state = STATE_RANGEREPORT;
       lastSent = millis();
@@ -272,18 +356,36 @@ void loop() {
     }
 
     if (state == STATE_RANGEREPORT) {
+#if DEBUG
+      Serial.println(F("  State: RANGEREPORT"));
+#endif /* DEBUG */
       if (rxBuffer[0] != FTYPE_RANGEREPORT) {
+#if DEBUG
+        Serial.println(F("    Not RANGEREPORT"));
+#endif /* DEBUG */
         return;
       }
       if (!DOES_SRC_MATCH(rxBuffer, anchorId[idx_anchor], ADDR_SIZE)) {
+#if DEBUG
+        Serial.println(F("    Not from countere part"));
+#endif /* DEBUG */
         return;
       }
       if (!DOES_DST_MATCH(rxBuffer, tagId, ADDR_SIZE)) {
+#if DEBUG
+        Serial.println(F("    Not for me"));
+#endif /* DEBUG */
         return;
       }
+#if DEBUG
+      Serial.println(F("    Received RANGEREPORT. Getting timestamps..."));
+#endif /* DEBUG */
       timePollReceived.setTimestamp(rxBuffer + 5);
       timePollAckSent.setTimestamp(rxBuffer + 10);
       timeRangeReceived.setTimestamp(rxBuffer + 15);
+#if DEBUG
+      Serial.println(F("    Calculating range..."));
+#endif /* DEBUG */
       calculateRange();
       state = STATE_ROUNDROBIN;
       return;
