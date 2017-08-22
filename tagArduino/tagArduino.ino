@@ -230,7 +230,7 @@ void loop() {
     Serial.println(F("  Return to ROUNDROBIN"));
 #endif /* DEBUG */
     idx_anchor++;
-    state == STATE_ROUNDROBIN;
+    state = STATE_ROUNDROBIN;
     return;
   }
 
