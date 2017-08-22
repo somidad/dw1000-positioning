@@ -50,7 +50,9 @@ void i2cReceiveEvent(int bytes) {
   if (!bytes) {
     return;
   }
-  cmd = Wire.read();
+  while (Wire.available()) {
+    cmd = Wire.read();
+  }
   if (cmd == CMD_SCAN && state == STATE_IDLE) {
     state = STATE_SCAN;
     return;
