@@ -243,6 +243,7 @@ void loop() {
       anchorId[idx_anchor] = ID_NONE;
       distance[idx_anchor] = 0;
     }
+    idx_anchor = 0;
     num_anchors = 0;
 #if DEBUG
     Serial.println(F("  Sending PING..."));
