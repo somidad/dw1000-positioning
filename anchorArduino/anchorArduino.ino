@@ -151,6 +151,7 @@ void loop() {
       Serial.println(F("  POLLACK sent. Getting timestamp..."));
 #endif /* DEBUG */
       DW1000.getTransmitTimestamp(timePollAckSent);
+      lastSent = millis();
     }
   }
 
