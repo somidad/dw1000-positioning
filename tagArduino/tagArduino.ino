@@ -19,9 +19,9 @@ const uint16_t networkId = 10;
 
 #define NUM_ANCHORS 5
 
-char cmd = CMD_NONE;
-char state = STATE_IDLE;
-char type = TYPE_NONE;
+volatile char cmd = CMD_NONE;
+volatile char state = STATE_IDLE;
+volatile char type = TYPE_NONE;
 
 unsigned char num_anchors = 0;
 unsigned char idx_anchor = 0;
