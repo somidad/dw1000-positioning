@@ -62,7 +62,7 @@ int getAnchorIds(int i2cFd, uint16_t* anchorId, int num_anchors) {
   }
 }
 
-int getDists(int i2cFd, uint16_t* distance, int num_anchors) {
+int getDists(int i2cFd, float* distance, int num_anchors) {
   uint8_t data[32];
 
   if (write(i2cFd, &cmd_type_dist, 1) != 1) {
