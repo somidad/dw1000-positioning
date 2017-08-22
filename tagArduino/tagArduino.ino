@@ -403,6 +403,11 @@ void loop() {
       Serial.println(F("    Calculating range..."));
 #endif /* DEBUG */
       calculateRange();
+#if DEBUG
+      Serial.print(F("    "));
+      Serial.println(distance[idx_anchor]);
+#endif /* DEBUG */
+      idx_anchor++;
       state = STATE_ROUNDROBIN;
       return;
     }
