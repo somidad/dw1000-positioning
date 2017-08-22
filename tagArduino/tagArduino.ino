@@ -145,6 +145,7 @@ void transmitPing() {
   SET_SRC(txBuffer, tagId, ADDR_SIZE);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
+  lastSent = 0;
 }
 
 void transmitPoll() {
@@ -155,6 +156,7 @@ void transmitPoll() {
   SET_DST(txBuffer, anchorId[idx_anchor], ADDR_SIZE);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
+  lastSent = 0;
 }
 
 void transmitRange() {
@@ -166,6 +168,7 @@ void transmitRange() {
   DW1000.setDelay(reply_delay);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
+  lastSent = 0;
 }
 
 void calculateRange() {
@@ -193,7 +196,7 @@ void setup() {
 
 void loop() {
   curMillis = millis();
-  if (state == STATE_PONG && curMillis - lastSent > PONG_TIMEOUT_MS) {
+  if (state == STATE_PONG && lastSent && curMillis - lastSent > PONG_TIMEOUT_MS) {
 #if DEBUG
     Serial.println(F("PONG timeout"));
 #endif /* DEBUG */
@@ -212,7 +215,7 @@ void loop() {
       return;
     }
   }
-  if (state == STATE_POLLACK && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
+  if (state == STATE_POLLACK && lastSent && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
 #if DEBUG
     Serial.println(F("POLLACK timeout"));
     Serial.println(F("  Return to ROUNDROBIN"));
@@ -221,7 +224,7 @@ void loop() {
     state = STATE_ROUNDROBIN;
     return;
   }
-  if (state == STATE_RANGEREPORT && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
+  if (state == STATE_RANGEREPORT && lastSent && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
 #if DEBUG
     Serial.println(F("RANGEREPORT timeout"));
     Serial.println(F("  Return to ROUNDROBIN"));
@@ -245,7 +248,6 @@ void loop() {
     Serial.println(F("  Sending PING..."));
 #endif /* DEBUG */
     transmitPing();
-    lastSent = millis();
     state = STATE_PONG;
     return;
   }
@@ -261,7 +263,6 @@ void loop() {
     Serial.println(F("  Sending POLL..."));
 #endif /* DEBUG */
       transmitPoll();
-      lastSent = millis();
       state = STATE_POLLACK;
     } else {
 #if DEBUG
@@ -277,17 +278,22 @@ void loop() {
     Serial.println(F("Sent something"));
 #endif /* DEBUG */
     sentFrame = false;
+    if (txBuffer[0] == FTYPE_PING) {
+      lastSent = millis();
+    }
     if (txBuffer[0] == FTYPE_POLL) {
 #if DEBUG
       Serial.println(F("  POLL sent. Getting timestamp..."));
 #endif /* DEBUG */
       DW1000.getTransmitTimestamp(timePollSent);
+      lastSent = millis();
     }
     if (txBuffer[0] == FTYPE_RANGE) {
 #if DEBUG
       Serial.println(F("  RANGE sent. Getting timestamp..."));
 #endif /* DEBUG */
       DW1000.getTransmitTimestamp(timeRangeSent);
+      lastSent = millis();
     }
   }
 
@@ -351,7 +357,6 @@ void loop() {
 #endif /* DEBUG */
       transmitRange();
       state = STATE_RANGEREPORT;
-      lastSent = millis();
       return;
     }
 
