@@ -92,6 +92,7 @@ void transmitPollAck() {
   DW1000.setDelay(reply_delay);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
+  lastSent = 0;
 }
 
 void transmitRangeReport() {
@@ -121,7 +122,7 @@ void setup() {
 
 void loop() {
   curMillis = millis();
-  if (state == STATE_RANGE && curMillis - lastSent > RANGE_TIMEOUT_MS) {
+  if (state == STATE_RANGE && lastSent && curMillis - lastSent > RANGE_TIMEOUT_MS) {
     /*
      * Check RANGE message timeout when state is waiting for RANGE message
      */
@@ -134,7 +135,7 @@ void loop() {
 
   if (sentFrame) {
 #if DEBUG
-    Serial.println(F("Sent someting"));
+    Serial.println(F("Sent something"));
 #endif /* DEBUG */
     sentFrame = false;
 
@@ -152,6 +153,12 @@ void loop() {
 #endif /* DEBUG */
       DW1000.getTransmitTimestamp(timePollAckSent);
       lastSent = millis();
+    }
+
+    if (txBuffer[0] == FTYPE_RANGEREPORT) {
+#if DEBUG
+      Serial.println(F("  RANGEREPORT sent"));
+#endif /* DEBUG */
     }
   }
 
@@ -224,6 +231,9 @@ void loop() {
 #endif /* DEBUG */
         return;
       }
+#if DEBUG
+      Serial.println(F("    Sending RANGEREPORT..."));
+#endif
       DW1000.getReceiveTimestamp(timeRangeReceived);
       transmitRangeReport();
       state = STATE_IDLE;
