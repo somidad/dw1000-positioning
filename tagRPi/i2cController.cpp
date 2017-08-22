@@ -69,7 +69,7 @@ int getAnchorIds(int i2cFd, uint16_t* anchorId, int num_anchors) {
   for (int i = 0; i < num_anchors; i++) {
     anchorId[i] = ID_NONE;
     /*& Arduino uses little endian */
-    anchorId[i] = (data[1] << 8) | data[0];
+    anchorId[i] = (data[2 * i + 1] << 8) | data[2 * i + 0];
   }
 }
 
@@ -87,7 +87,7 @@ int getDists(int i2cFd, float* distance, int num_anchors) {
   }
   for (int i = 0; i < num_anchors; i++) {
     /* Arduino uses little endian */
-    distance[i] = (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
+    distance[i] = (data[4 * i + 3] << 24) | (data[4 * i + 2] << 16) | (data[4 * i + 1] << 8) | data[4 * i + 0];
   }
 }
 
