@@ -339,7 +339,7 @@ void loop() {
 
     if (state == STATE_POLLACK) {
 #if DEBUG
-      Serial.println(F("  State: POLLAKC"));
+      Serial.println(F("  State: POLLACK"));
 #endif /* DEBUG */
       if (rxBuffer[0] != FTYPE_POLLACK) {
 #if DEBUG
