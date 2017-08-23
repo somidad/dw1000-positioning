@@ -5,9 +5,6 @@
 #include <vector>
 
 #define I2CDEV "/dev/i2c-1"
-#define I2CSLAVEADDR 0x04
-
-#define NUM_ANCHORS 5
 
 using namespace std;
 

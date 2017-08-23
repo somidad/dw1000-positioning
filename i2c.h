@@ -15,4 +15,8 @@
 #define I2C_NODATA 0b01111011
 #define I2C_DATARD 0b10000011
 
+#define I2CSLAVEADDR 0x04
+
+#define NUM_ANCHORS 5
+
 #endif /* __I2C_H */
