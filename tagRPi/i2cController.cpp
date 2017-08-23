@@ -19,7 +19,7 @@ uint8_t cmd_data_ready = CMD_DATA_READY;
 uint8_t cmd_type_id = CMD_TYPE_ID;
 uint8_t cmd_type_dist = CMD_TYPE_DIST;
 
-int openI2C(char* i2cdev, int i2cslaveaddr) {
+int openI2C(const char* i2cdev, int i2cslaveaddr) {
   int i2cFd = open(i2cdev, O_RDWR);
   if (i2cFd < 0) {
     cout << "Can't open I2C device(" << i2cdev << ")" << endl;

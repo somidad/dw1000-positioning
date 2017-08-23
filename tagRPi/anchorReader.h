@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int readAnchors(char* anchorFileName,
+int readAnchors(const char* anchorFileName,
                 vector<int>& config_anchorId,
                 vector<vector<float>>& config_anchorPos);
 

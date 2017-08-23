@@ -11,7 +11,7 @@
 
 using namespace std;
 
-int openI2C(char* i2cdev, int i2cslaveaddr);
+int openI2C(const char* i2cdev, int i2cslaveaddr);
 int triggerScan(int i2cFd);
 bool isReady(int i2cFd);
 int getAnchorIds(int i2cFd, uint16_t* anchorId);
