@@ -326,7 +326,6 @@ void loop() {
       }
       #warning "This may store anchors with the same ID"
       memcpy(&anchorId[idx_anchor], rxBuffer + 1, ADDR_SIZE);
-      num_anchors++;
 #if DEBUG
       Serial.print(F("    Anchor"));
       Serial.print(idx_anchor);
@@ -334,6 +333,8 @@ void loop() {
       Serial.print(anchorId[idx_anchor]);
       Serial.println(F(") found"));
 #endif /* DEBUG */
+      num_anchors++;
+      idx_anchor++;
       return;
     }
 
