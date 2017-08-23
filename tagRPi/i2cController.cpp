@@ -1,40 +1,39 @@
 #include <bitset>
 #include <cerrno>
-#include <cstdint>
-#include <cstring>
-#include <fstream>
 #include <iostream>
-
-#include <eigen3/Eigen/Dense>
-
-#include <mlat.h>
 
 // I2C
 #include <linux/i2c-dev.h> // I2C_SLAVE
 #include <fcntl.h>         // open, O_RDWR
 #include <sys/ioctl.h>     // ioctl
 #include <unistd.h>        // close
-#define I2CDEV "/dev/i2c-1"
-#define I2CSLAVEADDR 0x04
 
 #include "def.h"
 #include "i2c.h"
-
-#define NUM_ANCHORS 5
+#include "i2cController.h"
 
 using namespace std;
-using namespace Eigen;
-using namespace mlat;
 
 uint8_t cmd_scan = CMD_SCAN;
 uint8_t cmd_data_ready = CMD_DATA_READY;
 uint8_t cmd_type_id = CMD_TYPE_ID;
 uint8_t cmd_type_dist = CMD_TYPE_DIST;
 
-void printUsage() {
-  cout << "Usage" << endl;
-  cout << "  i2cController scan: commands Arduino to scan" << endl;
-  cout << "  i2cController read: requests Arduino for ranging data" << endl;
+int openI2C(char* i2cdev, int i2cslaveaddr) {
+  int i2cFd = open(i2cdev, O_RDWR);
+  if (i2cFd < 0) {
+    cout << "Can't open I2C device(" << i2cdev << ")" << endl;
+    return EBADF;
+  }
+  ioctl(i2cFd, I2C_SLAVE, I2CSLAVEADDR);
+  return i2cFd;
+}
+
+int triggerScan(int i2cFd) {
+  cout << "Triggering scan..." << endl;
+  if (write(i2cFd, &cmd_scan, 1) != 1) {
+    cout << "Somethings wrong" << endl;
+  }
 }
 
 int isReady(int i2cFd) {
@@ -121,114 +120,5 @@ int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance) {
   }
 
   return 0;
-}
-
-void getValidMeasurement(uint16_t* anchorId, float* distance,
-                        vector<uint16_t>& validAnchors, vector<float>& validDistance) {
-  validAnchors.clear();
-  validDistance.clear();
-  for (int i = 0; i < NUM_ANCHORS; i++) {
-    if (anchorId[i] && distance[i]) {
-      validAnchors.push_back(anchorId[i]);
-      validDistance.push_back(distance[i]);
-    }
-  }
-}
-
-int main(int argc, char* argv[]) {
-  int ret = 0;
-  if (argc < 2) {
-     printUsage();
-     return EINVAL;
-  }
-
-  int i2cFd = open(I2CDEV, O_RDWR);
-  if (i2cFd < 0) {
-    cout << "Can't open I2C device (" << I2CDEV << ")" << endl;
-    return EBADF;
-  }
-  ioctl(i2cFd, I2C_SLAVE, I2CSLAVEADDR);
-
-  uint16_t anchorId[NUM_ANCHORS] = {0, };
-  float distance[NUM_ANCHORS] = {0, };
-
-  if (!strcmp(argv[1], "scan")) {
-    cout << "Triggering scan..." << endl;
-    if (write(i2cFd, &cmd_scan, 1) != 1) {
-      cout << "Somethings wrong" << endl;
-    }
-  }
-
-  if (!strcmp(argv[1], "calc")) {
-    cout << "Reading measurement..." << endl;
-    ret = readMeasurement(i2cFd, anchorId, distance);
-    if (ret == -EBUSY) {
-      cout << "Resource busy. Maybe ranging is in progress. Try again later" << endl;
-      goto out;
-    }
-    if (ret == -EINVAL) {
-      cout << "Somethings wrong" << endl;
-      goto out;
-    }
-    if (ret < 0) {
-      cout << "Somethings wrong" << endl;
-      goto out;
-    }
-
-    ifstream anchorFile("anchors.csv");
-    vector<int> anchorIdsInFile;
-    vector<vector<float>> anchorPosition;
-    string value;
-    while (anchorFile.good()) {
-      getline(anchorFile, value, ',');
-      if (value == "\n") {
-        continue;
-      }
-      anchorIdsInFile.push_back(stoi(value));
-
-      vector<float> pos;
-      for (int i = 0; i < 2; i++) {
-        getline(anchorFile, value, ',');
-        pos.push_back(stof(value));
-      }
-      getline(anchorFile, value);
-      pos.push_back(stof(value));
-      anchorPosition.push_back(pos);
-    }
-    for (int i = 0; i < NUM_ANCHORS; i++) {
-      cout << "Anchor ID: " << anchorId[i] << " (0b" << bitset<16>(anchorId[i]) << ")"
-           << ", Distnace: " << distance[i] << " (0b" << bitset<32>(*(uint32_t*)&distance[i]) << ")" << endl;
-    }
-    vector<uint16_t> validAnchors;
-    vector<float> validDistance;
-    getValidMeasurement(anchorId, distance, validAnchors, validDistance);
-    if (validAnchors.size() < 3) {
-      cout << "Ranging measurements with anchors fewer than 3. Exit" << endl;
-      goto out;
-    }
-    MatrixXd anchors(validAnchors.size(), 3);
-    VectorXd ranges(anchors.rows());
-    for (int i = 0; i < anchors.rows(); i++) {
-      int idx;
-      for (int j = 0; j < anchorIdsInFile.size(); j++) {
-        if (validAnchors[i] == anchorIdsInFile[j]) {
-          idx = j;
-          break;
-        }
-      }
-      anchors(i, 0) = anchorPosition[idx][0];
-      anchors(i, 1) = anchorPosition[idx][1];
-      anchors(i, 2) = anchorPosition[idx][2];
-      ranges(i) = validDistance[i];
-    }
-    MLAT::GdescentResult gdescent_result = MLAT::mlat(anchors, ranges);
-    cout << "Estimated position" << endl;
-    cout << gdescent_result.estimator << endl;
-  }
-
-out:
-  close(i2cFd);
-
-  return ret;
 }
 
