@@ -73,12 +73,6 @@ void transmitPong() {
   txBuffer[0] = FTYPE_PONG;
   SET_SRC(txBuffer, anchorId, ADDR_SIZE);
   SET_DST(txBuffer, sender, ADDR_SIZE);
-  /*
-   * Simple random backoff [0, PONG_TIMEOUT_MS - 10) milliseconds
-   */
-  DW1000Time random_delay = DW1000Time(random(0, PONG_TIMEOUT_MS - 10),
-    DW1000Time::MILLISECONDS);
-  DW1000.setDelay(random_delay);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
 }
@@ -118,6 +112,7 @@ void setup() {
   Serial.println(F("Setup finished"));
   Serial.println(F("=============="));
 #endif /* DEBUG */
+  randomSeed(analogRead(0));
 }
 
 void loop() {
@@ -178,6 +173,16 @@ void loop() {
 #if DEBUG
         Serial.println(F("    Received PING. Reply with PONG"));
 #endif /* DEBUG */
+      /*
+       * Simple random backoff [0, PONG_TIMEOUT_MS - 10) milliseconds
+       */
+        int d = random(0, PONG_TIMEOUT_MS - 10);
+#if DEBUG
+        Serial.print(F("    PONG delayed "));
+        Serial.print(d);
+        Serial.println(F(" ms"));
+#endif /* DEBUG */
+        delay(d);
         transmitPong();
         state = STATE_PENDING_PONG;
         return;
