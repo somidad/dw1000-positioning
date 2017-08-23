@@ -36,6 +36,10 @@ Edit `MLAT` in `Makefile` properly
 - Edit `MLAT` in `Makefile` properly
 - Edit `I2CDEV` in `i2cController.h` properly
 
+```sh
+make
+```
+
 
 ## Running `tagRPi`
 
