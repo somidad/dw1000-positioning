@@ -221,6 +221,9 @@ int main(int argc, char* argv[]) {
       anchors(i, 2) = anchorPosition[idx][2];
       ranges(i) = validDistance[i];
     }
+    MLAT::GdescentResult gdescent_result = MLAT::mlat(anchors, ranges);
+    cout << "Estimated position" << endl;
+    cout << gdescent_result.estimator << endl;
   }
 
 out:
