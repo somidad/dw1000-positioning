@@ -1,0 +1,869 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>@font-face {
+  font-family: octicons-anchor;
+  src: url(data:font/woff;charset=utf-8;base64,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) format('woff');
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 980px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+body .markdown-body {
+    padding: 45px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    word-wrap: break-word;
+}
+
+pre {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+.markdown-body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  color: #333;
+  font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 16px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.markdown-body a {
+  background-color: transparent;
+}
+
+.markdown-body a:active,
+.markdown-body a:hover {
+  outline: 0;
+}
+
+.markdown-body strong {
+  font-weight: bold;
+}
+
+.markdown-body h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+.markdown-body img {
+  border: 0;
+}
+
+.markdown-body hr {
+  box-sizing: content-box;
+  height: 0;
+}
+
+.markdown-body pre {
+  overflow: auto;
+}
+
+.markdown-body code,
+.markdown-body kbd,
+.markdown-body pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+
+.markdown-body input {
+  color: inherit;
+  font: inherit;
+  margin: 0;
+}
+
+.markdown-body html input[disabled] {
+  cursor: default;
+}
+
+.markdown-body input {
+  line-height: normal;
+}
+
+.markdown-body input[type="checkbox"] {
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.markdown-body td,
+.markdown-body th {
+  padding: 0;
+}
+
+.markdown-body input {
+  font: 13px / 1.4 Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.markdown-body a {
+  color: #4078c0;
+  text-decoration: none;
+}
+
+.markdown-body a:hover,
+.markdown-body a:active {
+  text-decoration: underline;
+}
+
+.markdown-body hr {
+  height: 0;
+  margin: 15px 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.markdown-body hr:before {
+  display: table;
+  content: "";
+}
+
+.markdown-body hr:after {
+  display: table;
+  clear: both;
+  content: "";
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  line-height: 1.1;
+}
+
+.markdown-body h1 {
+  font-size: 30px;
+}
+
+.markdown-body h2 {
+  font-size: 21px;
+}
+
+.markdown-body h3 {
+  font-size: 16px;
+}
+
+.markdown-body h4 {
+  font-size: 14px;
+}
+
+.markdown-body h5 {
+  font-size: 12px;
+}
+
+.markdown-body h6 {
+  font-size: 11px;
+}
+
+.markdown-body blockquote {
+  margin: 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.markdown-body ol ol,
+.markdown-body ul ol {
+  list-style-type: lower-roman;
+}
+
+.markdown-body ul ul ol,
+.markdown-body ul ol ol,
+.markdown-body ol ul ol,
+.markdown-body ol ol ol {
+  list-style-type: lower-alpha;
+}
+
+.markdown-body dd {
+  margin-left: 0;
+}
+
+.markdown-body code {
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 12px;
+}
+
+.markdown-body pre {
+  margin-top: 0;
+  margin-bottom: 0;
+  font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+.markdown-body .select::-ms-expand {
+  opacity: 0;
+}
+
+.markdown-body .octicon {
+  font: normal normal normal 16px/1 octicons-anchor;
+  display: inline-block;
+  text-decoration: none;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.markdown-body .octicon-link:before {
+  content: '\f05c';
+}
+
+.markdown-body:before {
+  display: table;
+  content: "";
+}
+
+.markdown-body:after {
+  display: table;
+  clear: both;
+  content: "";
+}
+
+.markdown-body>*:first-child {
+  margin-top: 0 !important;
+}
+
+.markdown-body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+.markdown-body a:not([href]) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.markdown-body .anchor {
+  display: inline-block;
+  padding-right: 2px;
+  margin-left: -18px;
+}
+
+.markdown-body .anchor:focus {
+  outline: none;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 1em;
+  margin-bottom: 16px;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.markdown-body h1 .octicon-link,
+.markdown-body h2 .octicon-link,
+.markdown-body h3 .octicon-link,
+.markdown-body h4 .octicon-link,
+.markdown-body h5 .octicon-link,
+.markdown-body h6 .octicon-link {
+  color: #000;
+  vertical-align: middle;
+  visibility: hidden;
+}
+
+.markdown-body h1:hover .anchor,
+.markdown-body h2:hover .anchor,
+.markdown-body h3:hover .anchor,
+.markdown-body h4:hover .anchor,
+.markdown-body h5:hover .anchor,
+.markdown-body h6:hover .anchor {
+  text-decoration: none;
+}
+
+.markdown-body h1:hover .anchor .octicon-link,
+.markdown-body h2:hover .anchor .octicon-link,
+.markdown-body h3:hover .anchor .octicon-link,
+.markdown-body h4:hover .anchor .octicon-link,
+.markdown-body h5:hover .anchor .octicon-link,
+.markdown-body h6:hover .anchor .octicon-link {
+  visibility: visible;
+}
+
+.markdown-body h1 {
+  padding-bottom: 0.3em;
+  font-size: 2.25em;
+  line-height: 1.2;
+  border-bottom: 1px solid #eee;
+}
+
+.markdown-body h1 .anchor {
+  line-height: 1;
+}
+
+.markdown-body h2 {
+  padding-bottom: 0.3em;
+  font-size: 1.75em;
+  line-height: 1.225;
+  border-bottom: 1px solid #eee;
+}
+
+.markdown-body h2 .anchor {
+  line-height: 1;
+}
+
+.markdown-body h3 {
+  font-size: 1.5em;
+  line-height: 1.43;
+}
+
+.markdown-body h3 .anchor {
+  line-height: 1.2;
+}
+
+.markdown-body h4 {
+  font-size: 1.25em;
+}
+
+.markdown-body h4 .anchor {
+  line-height: 1.2;
+}
+
+.markdown-body h5 {
+  font-size: 1em;
+}
+
+.markdown-body h5 .anchor {
+  line-height: 1.1;
+}
+
+.markdown-body h6 {
+  font-size: 1em;
+  color: #777;
+}
+
+.markdown-body h6 .anchor {
+  line-height: 1.1;
+}
+
+.markdown-body p,
+.markdown-body blockquote,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body dl,
+.markdown-body table,
+.markdown-body pre {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-body hr {
+  height: 4px;
+  padding: 0;
+  margin: 16px 0;
+  background-color: #e7e7e7;
+  border: 0 none;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 2em;
+}
+
+.markdown-body ul ul,
+.markdown-body ul ol,
+.markdown-body ol ol,
+.markdown-body ol ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.markdown-body li>p {
+  margin-top: 16px;
+}
+
+.markdown-body dl {
+  padding: 0;
+}
+
+.markdown-body dl dt {
+  padding: 0;
+  margin-top: 16px;
+  font-size: 1em;
+  font-style: italic;
+  font-weight: bold;
+}
+
+.markdown-body dl dd {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.markdown-body blockquote {
+  padding: 0 15px;
+  color: #777;
+  border-left: 4px solid #ddd;
+}
+
+.markdown-body blockquote>:first-child {
+  margin-top: 0;
+}
+
+.markdown-body blockquote>:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body table {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  word-break: normal;
+  word-break: keep-all;
+}
+
+.markdown-body table th {
+  font-weight: bold;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  padding: 6px 13px;
+  border: 1px solid #ddd;
+}
+
+.markdown-body table tr {
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+}
+
+.markdown-body table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  box-sizing: content-box;
+  background-color: #fff;
+}
+
+.markdown-body code {
+  padding: 0;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(0,0,0,0.04);
+  border-radius: 3px;
+}
+
+.markdown-body code:before,
+.markdown-body code:after {
+  letter-spacing: -0.2em;
+  content: "\00a0";
+}
+
+.markdown-body pre>code {
+  padding: 0;
+  margin: 0;
+  font-size: 100%;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+
+.markdown-body .highlight {
+  margin-bottom: 16px;
+}
+
+.markdown-body .highlight pre,
+.markdown-body pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f7f7f7;
+  border-radius: 3px;
+}
+
+.markdown-body .highlight pre {
+  margin-bottom: 0;
+  word-break: normal;
+}
+
+.markdown-body pre {
+  word-wrap: normal;
+}
+
+.markdown-body pre code {
+  display: inline;
+  max-width: initial;
+  padding: 0;
+  margin: 0;
+  overflow: initial;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
+
+.markdown-body pre code:before,
+.markdown-body pre code:after {
+  content: normal;
+}
+
+.markdown-body kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 10px;
+  color: #555;
+  vertical-align: middle;
+  background-color: #fcfcfc;
+  border: solid 1px #ccc;
+  border-bottom-color: #bbb;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #bbb;
+}
+
+.markdown-body .pl-c {
+  color: #969896;
+}
+
+.markdown-body .pl-c1,
+.markdown-body .pl-s .pl-v {
+  color: #0086b3;
+}
+
+.markdown-body .pl-e,
+.markdown-body .pl-en {
+  color: #795da3;
+}
+
+.markdown-body .pl-s .pl-s1,
+.markdown-body .pl-smi {
+  color: #333;
+}
+
+.markdown-body .pl-ent {
+  color: #63a35c;
+}
+
+.markdown-body .pl-k {
+  color: #a71d5d;
+}
+
+.markdown-body .pl-pds,
+.markdown-body .pl-s,
+.markdown-body .pl-s .pl-pse .pl-s1,
+.markdown-body .pl-sr,
+.markdown-body .pl-sr .pl-cce,
+.markdown-body .pl-sr .pl-sra,
+.markdown-body .pl-sr .pl-sre {
+  color: #183691;
+}
+
+.markdown-body .pl-v {
+  color: #ed6a43;
+}
+
+.markdown-body .pl-id {
+  color: #b52a1d;
+}
+
+.markdown-body .pl-ii {
+  background-color: #b52a1d;
+  color: #f8f8f8;
+}
+
+.markdown-body .pl-sr .pl-cce {
+  color: #63a35c;
+  font-weight: bold;
+}
+
+.markdown-body .pl-ml {
+  color: #693a17;
+}
+
+.markdown-body .pl-mh,
+.markdown-body .pl-mh .pl-en,
+.markdown-body .pl-ms {
+  color: #1d3e81;
+  font-weight: bold;
+}
+
+.markdown-body .pl-mq {
+  color: #008080;
+}
+
+.markdown-body .pl-mi {
+  color: #333;
+  font-style: italic;
+}
+
+.markdown-body .pl-mb {
+  color: #333;
+  font-weight: bold;
+}
+
+.markdown-body .pl-md {
+  background-color: #ffecec;
+  color: #bd2c00;
+}
+
+.markdown-body .pl-mi1 {
+  background-color: #eaffea;
+  color: #55a532;
+}
+
+.markdown-body .pl-mdr {
+  color: #795da3;
+  font-weight: bold;
+}
+
+.markdown-body .pl-mo {
+  color: #1d3e81;
+}
+
+.markdown-body kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  line-height: 10px;
+  color: #555;
+  vertical-align: middle;
+  background-color: #fcfcfc;
+  border: solid 1px #ccc;
+  border-bottom-color: #bbb;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #bbb;
+}
+
+.markdown-body .plan-price-unit {
+  color: #767676;
+  font-weight: normal;
+}
+
+.markdown-body .task-list-item {
+  list-style-type: none;
+}
+
+.markdown-body .task-list-item+.task-list-item {
+  margin-top: 3px;
+}
+
+.markdown-body .task-list-item input {
+  margin: 0 0.35em 0.25em -1.6em;
+  vertical-align: middle;
+}
+
+.markdown-body .plan-choice {
+  padding: 15px;
+  padding-left: 40px;
+  display: block;
+  border: 1px solid #e0e0e0;
+  position: relative;
+  font-weight: normal;
+  background-color: #fafafa;
+}
+
+.markdown-body .plan-choice.open {
+  background-color: #fff;
+}
+
+.markdown-body .plan-choice.open .plan-choice-seat-breakdown {
+  display: block;
+}
+
+.markdown-body .plan-choice-free {
+  border-radius: 3px 3px 0 0;
+}
+
+.markdown-body .plan-choice-paid {
+  border-radius: 0 0 3px 3px;
+  border-top: 0;
+  margin-bottom: 20px;
+}
+
+.markdown-body .plan-choice-radio {
+  position: absolute;
+  left: 15px;
+  top: 18px;
+}
+
+.markdown-body .plan-choice-exp {
+  color: #999;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.markdown-body .plan-choice-seat-breakdown {
+  margin-top: 10px;
+  display: none;
+}
+
+.markdown-body :checked+.radio-label {
+  z-index: 1;
+  position: relative;
+  border-color: #4078c0;
+}
+</style><title>README-tag</title></head><body><article class="markdown-body"><h1>
+<a id="user-content-dw1000-측위-모듈---태그" class="anchor" href="#dw1000-%EC%B8%A1%EC%9C%84-%EB%AA%A8%EB%93%88---%ED%83%9C%EA%B7%B8" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DW1000 측위 모듈 - 태그</h1>
+<h2>
+<a id="user-content-시스템-개요" class="anchor" href="#%EC%8B%9C%EC%8A%A4%ED%85%9C-%EA%B0%9C%EC%9A%94" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>시스템 개요</h2>
+<p><a href="///C://Users/songsong/MPSS-USN/dwm1000/_assets/overview.png" target="_blank"><img src="///C://Users/songsong/MPSS-USN/dwm1000/_assets/overview.png" alt="" style="max-width:100%;"></a></p>
+<h2>
+<a id="user-content-하드웨어" class="anchor" href="#%ED%95%98%EB%93%9C%EC%9B%A8%EC%96%B4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>하드웨어</h2>
+<ul>
+<li>Raspberry Pi</li>
+<li>Arduino Pro Mini (atmega 328, 3.3 V, 8 MHz)</li>
+<li>DWM1000</li>
+</ul>
+<h3>
+<a id="user-content-하드웨어-연결" class="anchor" href="#%ED%95%98%EB%93%9C%EC%9B%A8%EC%96%B4-%EC%97%B0%EA%B2%B0" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>하드웨어 연결</h3>
+<ul>
+<li>Arduino와 DWM1000에 3.3 V 전원을 공급합니다 (Raspberry Pi와 접지를 공유하도록 연결)</li>
+<li>Raspberry Pi와 Arduino의 <code>SDA</code>, <code>SCL</code> 핀을 연결합니다</li>
+<li>Arduino와 DWM1000
+<ul>
+<li>SPI <code>CLK</code> (<code>SCK</code>), <code>MOSI</code>, <code>MISO</code>, <code>SS</code> (<code>CS</code>, <code>CE</code>) 핀을 연결합니다</li>
+<li>Arduino의 2번 핀과 DWM1000의 <code>IRQ</code> 핀을 연결합니다</li>
+<li>Arduino의 9번 핀과 DWM1000의 <code>RST</code> 핀을 연결합니다</li>
+</ul>
+</li>
+</ul>
+<h2>
+<a id="user-content-예제-소프트웨어" class="anchor" href="#%EC%98%88%EC%A0%9C-%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>예제 소프트웨어</h2>
+<ul>
+<li>
+<code>tagRPi/</code>: Raspberry Pi의 Linux 상에서 구동되는 측위 예제 프로그램입니다</li>
+<li>
+<code>tagArduino/</code>: Arduino Pro Mini 상에서 구동되는 측위 예제 스케치입니다</li>
+</ul>
+<h3>
+<a id="user-content-소프트웨어-빌드-및-설치" class="anchor" href="#%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4-%EB%B9%8C%EB%93%9C-%EB%B0%8F-%EC%84%A4%EC%B9%98" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>소프트웨어 빌드 및 설치</h3>
+<h4>
+<a id="user-content-tagrpi" class="anchor" href="#tagrpi" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><code>tagRPi</code>
+</h4>
+<p><strong>Ubuntu Linux를 기준으로 설명하겠습니다.
+I2C 제어와 Eigen3 라이브러리는 Windows에서도 사용가능하나
+그 (설치) 방법은 여기에서 다루지 않았습니다</strong></p>
+<h5>
+<a id="user-content-사전-요구사항" class="anchor" href="#%EC%82%AC%EC%A0%84-%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>사전 요구사항</h5>
+<p>I2C 제어를 위한 <code>libi2c-dev</code>를 설치합니다</p>
+<div class="highlight highlight-source-shell"><pre>[sudo] apt-get install libi2c-dev</pre></div>
+<p>삼변측량을 위한 Eigen3를 설치하고, <code>mlat</code>을 다운로드합니다</p>
+<div class="highlight highlight-source-shell"><pre>[sudo] apt-get install libeigen3-dev
+git clone https://github.com/gsongsong/mlat</pre></div>
+<h5>
+<a id="user-content-소프트웨어-빌드" class="anchor" href="#%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4-%EB%B9%8C%EB%93%9C" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>소프트웨어 빌드</h5>
+<ul>
+<li>상위 폴더에서 <code>def.h</code>, <code>i2c.h</code>를 복사합니다</li>
+<li>필요한 경우, <code>i2c.h</code> 파일 안의 <code>I2CSLAVEADDR</code>를 수정합니다<br>
+이것은 Raspberry Pi에 I2C로 연결된 Arduino slave의 주소를 의미합니다</li>
+<li>
+<code>Makfile</code> 파일 안의 <code>MLAT</code>을 위에서 다운로드한 mlat의 <code>cpp</code> 디렉토리를 가르키도록 수정합니다</li>
+<li>
+<code>i2cController.h</code>의 <code>I2CDEV</code>를 Ubuntu Linux 상의 올바른 I2C 장치 파일을 가르키도록 수정합니다</li>
+</ul>
+<p>아래 명령을 입력하여 소프트웨어를 빌드하고 실행하여 결과를 확인합니다</p>
+<div class="highlight highlight-source-shell"><pre>make
+./tagRPi</pre></div>
+<h4>
+<a id="user-content-tagarduino" class="anchor" href="#tagarduino" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><code>tagArduino</code>
+</h4>
+<h5>
+<a id="user-content-사전-요구사항-1" class="anchor" href="#%EC%82%AC%EC%A0%84-%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>사전 요구사항</h5>
+<p>Arduino 스케치를 컴파일하고 업로드할 컴퓨터에 <a href="https://github.com/thotro/arduino-dw1000"><code>arduino-dw1000</code></a>를 설치합니다. 해당 페이지의 Installation 섹션을 참고하십시오</p>
+<h5>
+<a id="user-content-스케치-업로드" class="anchor" href="#%EC%8A%A4%EC%BC%80%EC%B9%98-%EC%97%85%EB%A1%9C%EB%93%9C" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>스케치 업로드</h5>
+<ul>
+<li>상위 폴더에서 <code>def.h</code>, <code>dwm1000.h</code>, <code>i2c.h</code>를 복사합니다</li>
+<li>필요한 경우, <code>i2c.h</code> 파일 안의 <code>I2CSLAVEADDR</code>를 수정합니다<br>
+이것은 Raspberry Pi에 I2C로 연결된 Arduino slave의 주소를 의미합니다</li>
+</ul>
+<p>Arduino IDE를 사용하여 스케치를 컴파일하고 업로드합니다</p>
+<h2>
+<a id="user-content-소프트웨어-메커니즘" class="anchor" href="#%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>소프트웨어 메커니즘</h2>
+<h3>
+<a id="user-content-i2c-통신-메커니즘" class="anchor" href="#i2c-%ED%86%B5%EC%8B%A0-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>I2C 통신 메커니즘</h3>
+<ul>
+<li>Raspberry Pi와 Arduino는 I2C 인터페이스를 통해 명령과 데이터를 주고 받습니다</li>
+<li>Arduino는 기본적으로 <code>I2CSLAVEADDR (0x04)</code>의 주소를 사용하여 slave로 작동합니다</li>
+<li>스캔
+<ul>
+<li>Raspberry Pi가 Arduino에게 스캔 명령을 전송하면, Arduino는 최대 5 개의 주변 앵커(비콘)을 스캔하고 각 앵커와의 거리를 측정합니다</li>
+<li>Raspberry Pi가 Arduino에게 I2C 연결을 통해 <code>CMD_SCAN (0x01)</code> 1 바이트를 전송하는 것으로 스캔 명령이 전송됩니다</li>
+</ul>
+</li>
+<li>데이터 준비 확인
+<ul>
+<li>Raspberry Pi가 Arduino에게 I2C 연결을 통해 <code>CMD_DATA_READY (0x02)</code> 1 바이트를 전송하는 것으로, 거리 측정 데이터가 준비되었지 확인할 수 있는 특정한 값을 전송하도록 준비시킵니다</li>
+<li>Raspberry Pi가 Arduino로부터 1 바이트를 읽었을 때, 읽은 값이
+<ul>
+<li>
+<code>I2C_NODATA</code>, <code>123</code> 또는 2진수로 <code>01111011</code>일 경우 잠시 후에 다시 시도하십시오</li>
+<li>
+<code>I2C_DATARD</code>, <code>131</code> 또는 2진수로 <code>10000011</code>일 경우 Arduino가 거리 측정 데이터를 전송할 준비가 되었다는 것을 알 수 있습니다</li>
+</ul>
+</li>
+<li><strong>스캔 명령을 전송한 후, 250 ms 이후에 데이터가 준비됩니다. 충분한 공백을 두어 330 ms 이후 데이터를 획득하는 것을 권장합니다</strong></li>
+</ul>
+</li>
+<li>앵커(비콘) ID 획득
+<ul>
+<li>Raspberry Pi가 Arduino에게 I2C 연결을 통해 <code>CMD_TYPE_ID (0x03)</code> 1 바이트를 전송하는 것으로, Arduino가 앵커 ID를 전송하도록 준비시킵니다</li>
+<li>Raspberry Pi가 Arduino로부터 10 바이트 (2 * <code>NUM_ANCHORS</code>)를 성공적으로 읽어들이면, 총 5 개의 앵커(비콘)의 ID를 획득합니다. <code>ID_NONE (0x00)</code>은 스캔된 앵커(비콘)이 없음을 뜻합니다. 유효한 앵커(비콘)은 1 이상의 정수인 ID를 가집니다</li>
+<li>Arduino는 little endian을 사용하므로, 바이트 배열 형식으로 획득한 ID 값을 5 개의 16 비트 정수로 변환하는 데에 유의하십시오</li>
+</ul>
+</li>
+<li>각 앵커(비콘)과의 거리 측정 값 획득
+<ul>
+<li>Raspberry Pi가 Arduino에게 I2C 연결을 통해 <code>CMD_TYPE_DIST (0x04)</code> 1 바이트를 전송하는 것으로, Arduino가 앵커 ID를 전송하도록 준비시킵니다</li>
+<li>Raspberry Pi가 Arduino로부터 20 바이트 (4 * <code>NUM_ANCHORS</code>)를 성공적으로 읽어들이면, 총 5 개의 앵커(비콘)와의 거리 측정 값을 획득합니다. 단위는 미터입니다. 0은 스캔된 비콘(앵커)가 없거나, 비콘(앵커)가 성공적으로 스캔되었지만, 이후 과정에서 거리 측정이 성공적으로 이루어지지 못했음을 의미합니다</li>
+<li>Arduino는 little endian을 사용하므로, 바이트 배열 형식으로 획득한 거리 측정 값을 5 개의 32 비트 실수로 변환하는 데에 유의하십시오</li>
+</ul>
+</li>
+</ul>
+<h3>
+<a id="user-content-삼변측량-메커니즘" class="anchor" href="#%EC%82%BC%EB%B3%80%EC%B8%A1%EB%9F%89-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>삼변측량 메커니즘</h3>
+<ul>
+<li>I2C 통신을 통해 거리 측정에 성공한 앵커(비콘)의 개수가 3 개 이상이면, 삼변측량을 수행할 수 있습니다.</li>
+<li>각 앵커(비콘)의 설치 위치는 <code>anchors.csv</code>에 정의되어 있습니다.
+<ul>
+<li>각 행의 첫 번째 숫자는 앵커(비콘)의 ID, 그 뒤의 숫자는 x, y, z 좌표입니다</li>
+</ul>
+</li>
+<li>거리 측정에 성공한 앵커(비콘)의 개수를 <code>N</code>이라고 가정하였을 때,
+<ul>
+<li>
+<code>(N, 3)</code> 크기의 <code>Eigen::MatrixXd</code> (2차원 행렬) <code>anchors</code>
+</li>
+<li>
+<code>N</code> 길이의 <code>Eigen::VectorXd</code> (1차원 배열) <code>ranges</code><br>
+를 생성합니다</li>
+<li>
+<code>anchors</code>의 각 행에 거리 측정에 성공한 앵커(비콘)의 ID에 해당하는 설치 위치를 x, y, z 순서대로 저장합니다</li>
+<li>
+<code>ranges</code>의 각 항에 <code>anchors</code>에 저장된 앵커(비콘)에 해당하는 거리 측정 값을 저장합니다</li>
+</ul>
+</li>
+<li>
+<code>MLAT::GdescentResult gdescent_result = MLAT::mlat(anchors, ranges);</code>의 명령으로 삼변측량을 수행합니다</li>
+<li>태그의 최종 추정 위치는 <code>gdescent_result.estimator</code> (3 길이의 Eigen 배열)에 저장되어 있습니다</li>
+</ul>
+</article></body></html>
