@@ -181,13 +181,18 @@ int main(int argc, char* argv[]) {
     string value;
     while (anchorFile.good()) {
       getline(anchorFile, value, ',');
+      if (value == "\n") {
+        continue;
+      }
       anchorIdsInFile.push_back(stoi(value));
 
       vector<float> pos;
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 2; i++) {
         getline(anchorFile, value, ',');
         pos.push_back(stof(value));
       }
+      getline(anchorFile, value);
+      pos.push_back(stof(value));
       anchorPosition.push_back(pos);
     }
     for (int i = 0; i < NUM_ANCHORS; i++) {
