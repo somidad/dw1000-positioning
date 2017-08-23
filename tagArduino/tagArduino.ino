@@ -17,8 +17,6 @@
 const uint16_t tagId = 1;
 const uint16_t networkId = 10;
 
-#define NUM_ANCHORS 5
-
 volatile char cmd = CMD_NONE;
 volatile char state = STATE_IDLE;
 volatile char type = TYPE_NONE;
@@ -98,7 +96,7 @@ void i2cRequestEvent() {
 void setupI2C() {
   // 7-bit addressing
   // ref: table 3, page 17, http://www.nxp.com/docs/en/user-guide/UM10204.pdf
-  Wire.begin(0x04);
+  Wire.begin(I2CSLAVEADDR);
   Wire.onRequest(i2cRequestEvent);
   Wire.onReceive(i2cReceiveEvent);
   type = TYPE_NONE;
