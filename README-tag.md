@@ -19,6 +19,8 @@
     - Arduino의 2번 핀과 DWM1000의 `IRQ` 핀을 연결합니다
     - Arduino의 9번 핀과 DWM1000의 `RST` 핀을 연결합니다
 
+![](_assets/proto.jpg)
+
 ## 예제 소프트웨어
 
 - `tagRPi/`: Raspberry Pi의 Linux 상에서 구동되는 측위 예제 프로그램입니다
@@ -112,3 +114,28 @@ Arduino IDE를 사용하여 스케치를 컴파일하고 업로드합니다
    - `ranges`의 각 항에 `anchors`에 저장된 앵커(비콘)에 해당하는 거리 측정 값을 저장합니다
 - `MLAT::GdescentResult gdescent_result = MLAT::mlat(anchors, ranges);`의 명령으로 삼변측량을 수행합니다
 - 태그의 최종 추정 위치는 `gdescent_result.estimator` (3 길이의 Eigen 배열)에 저장되어 있습니다
+
+### 스캔 및 거리 측정 메커니즘
+
+전체 스캔 및 거리 측정 메커니즘은 아래와 같은 시퀀스 다이어그램으로 나타낼 수 있습ㄴ디ㅏ
+
+![](_assets/sequence.png)
+
+태그의 스캔 및 거리 측정 메커니즘은 아래와 같은 상태 다이어그램으로 나타낼 수 있습니다
+
+![](_assets/state-tag.png)
+
+- `SCAN` 및 `PONG` 상태는 주변에 존재하는 앵커(비콘)들을 발견하는 상태입니다  
+   `PONG` 상태는 100 ms의 pong timeout 이후, 발견한 앵커(비콘)의 개수가
+   - 3 개 미만이면 `IDLE` 상태로 돌아갑니다
+   - 3 개 이상이면 `ROUNDROBIN` 상태로 돌아갑니다
+- `ROUNDROBIN` 상태는 발견된 3 개 이상의 앵커(비콘)들과의 거리를 순차적으로 측정하는 상태입니다
+   - `POLLACK` 상태는 `POLL` 프레임을 앵커에게 전송한 후 `POLLACK` 프레임을 기다리는 상태입니다  
+      - 10 ms의 timeout 이후
+      - `POLLACK` 프레임을 수신하면  
+      `ROUNDROBIN` 상태로 돌아갑니다
+   - `RANGERERPORT` 상태는 `RAGNE` 프레임을 앵커에게 전송한 후 `RANGEREPORT` 프레임을 기다리는 상태입니다  
+      - 10 ms의 timeout 이후
+      - `RANGEREPORT` 프레임을 수신하면, 송수신한 프레임의 시간 정보를 활용하여 거리를 계산한 후  
+      `ROUNDROBIN` 상태로 돌아갑니다
+    - 모든 앵커(비콘)과의 거리 측정이 완료되면 `IDLE` 상태로 돌아갑니다
