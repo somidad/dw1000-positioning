@@ -25,7 +25,7 @@ int openI2C(const char* i2cdev, int i2cslaveaddr) {
     cout << "Can't open I2C device(" << i2cdev << ")" << endl;
     return EBADF;
   }
-  ioctl(i2cFd, I2C_SLAVE, I2CSLAVEADDR);
+  ioctl(i2cFd, I2C_SLAVE, i2cslaveaddr);
   return i2cFd;
 }
 
@@ -80,6 +80,7 @@ int getAnchorIds(int i2cFd, uint16_t* anchorId) {
     /* Arduino uses little endian */
     anchorId[i] = (data[2 * i + 1] << 8) | data[2 * i + 0];
   }
+  return 0;
 }
 
 int getDists(int i2cFd, float* distance) {
@@ -103,11 +104,11 @@ int getDists(int i2cFd, float* distance) {
                           | (data[4 * i + 1] <<  8) | (data[4 * i + 0]      );
     distance[i] = *(float*)&float_binary;
   }
+  return 0;
 }
 
 int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance) {
   int ret;
-  uint8_t data[32];
 
   if(!isReady(i2cFd)) {
     return -1;

@@ -26,4 +26,5 @@ int readAnchors(const char* anchorFileName,
     pos.push_back(stof(value));
     config_anchorPos.push_back(pos);
   }
+  return 0;
 }
