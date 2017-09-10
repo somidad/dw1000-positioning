@@ -26,12 +26,17 @@ DW1000Time timeRangeReceived;
 
 unsigned long curMillis;
 unsigned long lastSent;
+unsigned long lastActivity;
 
 byte txBuffer[FRAME_LEN];
 byte rxBuffer[FRAME_LEN];
 
 boolean sentFrame = false;
 boolean receivedFrame = false;
+
+void noteActivity() {
+  lastActivity = millis();
+}
 
 /*************************************
  * Arduino (master) - DW1000 (slave) *
@@ -48,7 +53,8 @@ void initDW1000Receiver() {
   DW1000.newReceive();
   DW1000.setDefaults();
   DW1000.receivePermanently(true);
-  DW1000.startReceive();  
+  DW1000.startReceive();
+  noteActivity();
 }
 
 void setupDW1000() {
@@ -127,6 +133,11 @@ void loop() {
     state = STATE_IDLE;
     return;
   }
+  if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
+    Serial.println(F("Seems transceiver not working. Re-init it."));
+    initDW1000Receiver();
+    return;
+  }
 
   if (sentFrame) {
 #if DEBUG
@@ -139,6 +150,7 @@ void loop() {
       Serial.println(F("  Pending PONG sent. Return to IDLE"));
 #endif /* DEBUG */
       state = STATE_IDLE;
+      noteActivity();
       return;
     }
 
@@ -147,13 +159,14 @@ void loop() {
       Serial.println(F("  POLLACK sent. Getting timestamp..."));
 #endif /* DEBUG */
       DW1000.getTransmitTimestamp(timePollAckSent);
-      lastSent = millis();
+      noteActivity();
     }
 
     if (txBuffer[0] == FTYPE_RANGEREPORT) {
 #if DEBUG
       Serial.println(F("  RANGEREPORT sent"));
 #endif /* DEBUG */
+      noteActivity();
     }
   }
 
@@ -185,6 +198,7 @@ void loop() {
         delay(d);
         transmitPong();
         state = STATE_PENDING_PONG;
+        noteActivity();
         return;
       }
       if (rxBuffer[0] == FTYPE_POLL) {
@@ -204,6 +218,7 @@ void loop() {
         tagCounterPart = sender;
         transmitPollAck();
         state = STATE_RANGE;
+        noteActivity();
         return;
       }
     }
@@ -217,6 +232,7 @@ void loop() {
        * PONG message is pending to be transmitted
        * Anchor should ignore all other messages
        */
+      noteActivity();
       return;
     }
 
@@ -242,6 +258,7 @@ void loop() {
       DW1000.getReceiveTimestamp(timeRangeReceived);
       transmitRangeReport();
       state = STATE_IDLE;
+      noteActivity();
       return;
     }
   }
