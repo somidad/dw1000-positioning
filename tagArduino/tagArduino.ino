@@ -14,7 +14,7 @@
 #define PIN_SS  SS
 
 /* Edit tagId */
-const uint16_t tagId = 1;
+const uint16_t tagId = FLAG_TAG | 1;
 const uint16_t networkId = 10;
 
 volatile char cmd = CMD_NONE;
