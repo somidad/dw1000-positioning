@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
   if (i2cFd < 0) {
     return 1;
   }
+while (true) {
   triggerScan(i2cFd);
   usleep(330 * 1000); // wait for scanning and ranging delay (330 ms)
   cout << "Reading measurement..." << endl;
@@ -45,9 +46,9 @@ int main(int argc, char* argv[]) {
   }
   getValidMeasurement(data_anchorId, data_distance, validAnchors, validDistance);
   if (validAnchors.size() < 3) {
-    cout << "Valid ranging measurements with anchors fewer than 3. Exit" << endl;
-    close(i2cFd);
-    return EINVAL;
+    cout << "Valid ranging measurements with anchors fewer than 3. Skip" << endl;
+    usleep(50 * 1000);
+    continue;
   }
 
   // preparing and performing mlat
@@ -75,6 +76,10 @@ int main(int argc, char* argv[]) {
   }
   cout << "Estimated position" << endl;
   cout << gdescent_result.estimator << endl;
+
+  int d = 50;
+  usleep(d * 1000);
+}
 
   close(i2cFd);
   return ret;
