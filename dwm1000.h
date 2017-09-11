@@ -26,6 +26,7 @@
 #define RANGE_TIMEOUT_MS        10
 #define RANGEREPORT_TIMEOUT_MS  10
 #define REPLY_DELAY_MS           3
+#define RESET_TIMEOUT_MS      1000
 
 #define SET_SRC(buf, addr, sz) memcpy(buf + 1, &addr, sz)
 #define SET_DST(buf, addr, sz) memcpy(buf + 3, &addr, sz)
