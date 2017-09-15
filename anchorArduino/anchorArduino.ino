@@ -1,18 +1,17 @@
-#include <SPI.h>
-
-#include <DW1000.h>
-
-#include "def.h"
-#include "dwm1000.h"
-
 #define DEBUG true
 #if DEBUG
+  #include <SPI.h>
   #define PRINT(x)   Serial.print(x)
   #define PRINTLN(x) Serial.println(x)
 #else // DEBUG
   #define PRINT(x)
   #define PRINTLN(x)
 #endif // DEBUG
+
+#include <DW1000.h>
+
+#include "def.h"
+#include "dwm1000.h"
 
 #define PIN_IRQ  2
 #define PIN_RST  9
