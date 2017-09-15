@@ -181,6 +181,7 @@ void loop() {
   if (receivedFrame) {
     PRINTLN(F("Received something"));
     receivedFrame = false;
+    noteActivity();
     DW1000.getData(rxBuffer, FRAME_LEN);
     GET_SRC(rxBuffer, sender, ADDR_SIZE);
 
@@ -196,7 +197,6 @@ void loop() {
         delay(d);
         transmitPong();
         state = STATE_PENDING_PONG;
-        noteActivity();
         return;
       }
       if (rxBuffer[0] == FTYPE_POLL) {
@@ -210,7 +210,6 @@ void loop() {
         tagCounterPart = sender;
         transmitPollAck();
         state = STATE_RANGE;
-        noteActivity();
         return;
       }
     }
@@ -222,7 +221,6 @@ void loop() {
        * PONG message is pending to be transmitted
        * Anchor should ignore all other messages
        */
-      noteActivity();
       return;
     }
 
@@ -240,7 +238,6 @@ void loop() {
       DW1000.getReceiveTimestamp(timeRangeReceived);
       transmitRangeReport();
       state = STATE_IDLE;
-      noteActivity();
       return;
     }
   }
