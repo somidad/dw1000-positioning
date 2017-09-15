@@ -183,7 +183,8 @@ void calculateRange() {
     DW1000Time reply1 = (timePollAckSent - timePollReceived).wrap();
     DW1000Time round2 = (timeRangeReceived - timePollAckSent).wrap();
     DW1000Time reply2 = (timeRangeSent - timePollAckReceived).wrap();
-    DW1000Time tof = (round1 * round2 - reply1 * reply2) / (round1 + round2 + reply1 + reply2);
+    DW1000Time tof = (round1 * round2 - reply1 * reply2)
+                      / (round1 + round2 + reply1 + reply2);
     distance[idx_anchor] = tof.getAsMeters();
 }
 
@@ -202,7 +203,8 @@ void setup() {
 
 void loop() {
   curMillis = millis();
-  if (state == STATE_PONG && lastSent && curMillis - lastSent > PONG_TIMEOUT_MS) {
+  if (state == STATE_PONG
+      && lastSent && curMillis - lastSent > PONG_TIMEOUT_MS) {
     PRINTLN(F("PONG timeout"));
     if (num_anchors < 3) {
       PRINTLN(F("  Not enough anchors scanned. Return to IDLE"));
@@ -215,14 +217,16 @@ void loop() {
       return;
     }
   }
-  if (state == STATE_POLLACK && lastSent && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
+  if (state == STATE_POLLACK && lastSent
+      && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
     PRINTLN(F("POLLACK timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
     idx_anchor++;
     updateState(STATE_ROUNDROBIN);
     return;
   }
-  if (state == STATE_RANGEREPORT && lastSent && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
+  if (state == STATE_RANGEREPORT && lastSent
+      && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
     PRINTLN(F("RANGEREPORT timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
     idx_anchor++;
