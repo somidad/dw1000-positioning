@@ -51,6 +51,11 @@ void updateState(int nextState) {
   lastStateChange = millis();
 }
 
+void updateRoundRobin() {
+  idx_anchor++;
+  updateState(STATE_ROUNDROBIN);
+}
+
 void noteActivity() {
   lastActivity = millis();
 }
@@ -227,16 +232,14 @@ void loop() {
       && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
     PRINTLN(F("POLLACK timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
-    idx_anchor++;
-    updateState(STATE_ROUNDROBIN);
+    updateRoundRobin();
     return;
   }
   if (state == STATE_RANGEREPORT && lastSent
       && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
     PRINTLN(F("RANGEREPORT timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
-    idx_anchor++;
-    updateState(STATE_ROUNDROBIN);
+    updateRoundRobin();
     return;
   }
   if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
@@ -359,8 +362,7 @@ void loop() {
       PRINTLN(F("    Calculating range..."));
       calculateRange();
       PRINT(F("    ")); PRINTLN(distance[idx_anchor]);
-      idx_anchor++;
-      updateState(STATE_ROUNDROBIN);
+      updateRoundRobin();
       return;
     }
   }
