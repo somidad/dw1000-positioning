@@ -85,14 +85,11 @@ void prepareTx() {
   DW1000.setDefaults();
 }
 
-void clearLastSent() {
-  lastSent = 0;
-}
-
 void startTx() {
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
-  clearLastSent();
+  // timeout will be asserted after tx interrupt
+  lastSent = 0;
 }
 
 void transmitPong() {
@@ -155,25 +152,21 @@ void loop() {
   if (sentFrame) {
     PRINTLN(F("Sent something"));
     sentFrame = false;
+    noteActivity();
+    lastSent = lastActivity;
 
     if (state == STATE_PENDING_PONG && txBuffer[0] == FTYPE_PONG) {
       PRINTLN(F("  Pending PONG sent. Return to IDLE"));
       state = STATE_IDLE;
-      lastSent = millis();
-      noteActivity();
       return;
     }
 
     if (txBuffer[0] == FTYPE_POLLACK) {
       PRINTLN(F("  POLLACK sent. Getting timestamp..."));
       DW1000.getTransmitTimestamp(timePollAckSent);
-      lastSent = millis();
-      noteActivity();
     }
 
     if (txBuffer[0] == FTYPE_RANGEREPORT) {
-      lastSent = millis();
-      noteActivity();
       PRINTLN(F("  RANGEREPORT sent"));
     }
   }
