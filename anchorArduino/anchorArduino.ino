@@ -6,6 +6,13 @@
 #include "dwm1000.h"
 
 #define DEBUG true
+#if DEBUG
+  #define PRINT(x)   Serial.print(x)
+  #define PRINTLN(x) Serial.println(x)
+#else // DEBUG
+  #define PRINT(x)
+  #define PRINTLN(x)
+#endif // DEBUG
 
 #define PIN_IRQ  2
 #define PIN_RST  9
@@ -123,9 +130,9 @@ void setup() {
   setupDW1000();
 #if DEBUG
   Serial.begin(115200);
-  Serial.println(F("Setup finished"));
-  Serial.println(F("=============="));
-#endif /* DEBUG */
+#endif // DEBUG
+  PRINTLN(F("Setup finished"));
+  PRINTLN(F("=============="));
   randomSeed(analogRead(0));
 }
 
@@ -135,30 +142,22 @@ void loop() {
     /*
      * Check RANGE message timeout when state is waiting for RANGE message
      */
-#if DEBUG
-    Serial.println(F("RANGE timeout. Return to IDLE"));
-#endif /* DEBUG */
+    PRINTLN(F("RANGE timeout. Return to IDLE"));
     state = STATE_IDLE;
     return;
   }
   if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
-#if DEBUG
-    Serial.println(F("Seems transceiver not working. Re-init it."));
-#endif /* DEBUG */
+    PRINTLN(F("Seems transceiver not working. Re-init it."));
     initDW1000Receiver();
     return;
   }
 
   if (sentFrame) {
-#if DEBUG
-    Serial.println(F("Sent something"));
-#endif /* DEBUG */
+    PRINTLN(F("Sent something"));
     sentFrame = false;
 
     if (state == STATE_PENDING_PONG && txBuffer[0] == FTYPE_PONG) {
-#if DEBUG
-      Serial.println(F("  Pending PONG sent. Return to IDLE"));
-#endif /* DEBUG */
+      PRINTLN(F("  Pending PONG sent. Return to IDLE"));
       state = STATE_IDLE;
       lastSent = millis();
       noteActivity();
@@ -166,48 +165,34 @@ void loop() {
     }
 
     if (txBuffer[0] == FTYPE_POLLACK) {
-#if DEBUG
-      Serial.println(F("  POLLACK sent. Getting timestamp..."));
-#endif /* DEBUG */
+      PRINTLN(F("  POLLACK sent. Getting timestamp..."));
       DW1000.getTransmitTimestamp(timePollAckSent);
       lastSent = millis();
       noteActivity();
     }
 
     if (txBuffer[0] == FTYPE_RANGEREPORT) {
-#if DEBUG
-      Serial.println(F("  RANGEREPORT sent"));
-#endif /* DEBUG */
       lastSent = millis();
       noteActivity();
+      PRINTLN(F("  RANGEREPORT sent"));
     }
   }
 
   if (receivedFrame) {
-#if DEBUG
-    Serial.println(F("Received something"));
-#endif /* DEBUG */
+    PRINTLN(F("Received something"));
     receivedFrame = false;
     DW1000.getData(rxBuffer, FRAME_LEN);
     GET_SRC(rxBuffer, sender, ADDR_SIZE);
 
     if (state == STATE_IDLE) {
-#if DEBUG
-      Serial.println(F("  State: IDLE"));
-#endif /* DEBUG */
+      PRINTLN(F("  State: IDLE"));
       if (rxBuffer[0] == FTYPE_PING) {
-#if DEBUG
-        Serial.println(F("    Received PING. Reply with PONG"));
-#endif /* DEBUG */
+        PRINTLN(F("    Received PING. Reply with PONG"));
       /*
        * Simple random backoff [0, PONG_TIMEOUT_MS - 10) milliseconds
        */
         int d = random(0, PONG_TIMEOUT_MS - 10);
-#if DEBUG
-        Serial.print(F("    PONG delayed "));
-        Serial.print(d);
-        Serial.println(F(" ms"));
-#endif /* DEBUG */
+        PRINT(F("    PONG delayed ")); PRINT(d); PRINTLN(F(" ms"));
         delay(d);
         transmitPong();
         state = STATE_PENDING_PONG;
@@ -215,18 +200,12 @@ void loop() {
         return;
       }
       if (rxBuffer[0] == FTYPE_POLL) {
-#if DEBUG
-        Serial.println(F("    Received POLL"));
-#endif /* DEBUG */
+        PRINTLN(F("    Received POLL"));
         if (!DOES_DST_MATCH(rxBuffer, anchorId, ADDR_SIZE)) {
-#if DEBUG
-          Serial.println(F("      Not for me"));
-#endif /* DEBUG */
+          PRINTLN(F("      Not for me"));
           return;
         }
-#if DEBUG
-        Serial.println(F("      Reply with POLLACK"));
-#endif /* DEBUG */
+        PRINTLN(F("      Reply with POLLACK"));
         DW1000.getReceiveTimestamp(timePollReceived);
         tagCounterPart = sender;
         transmitPollAck();
@@ -237,10 +216,8 @@ void loop() {
     }
 
     if (state == STATE_PENDING_PONG) {
-#if DEBUG
-      Serial.println(F("  State: PENDING_PONG"));
-      Serial.println(F("    Ignore all received frames"));
-#endif /* DEBUG */
+      PRINTLN(F("  State: PENDING_PONG"));
+      PRINTLN(F("    Ignore all received frames"));
       /*
        * PONG message is pending to be transmitted
        * Anchor should ignore all other messages
@@ -250,24 +227,16 @@ void loop() {
     }
 
     if (state == STATE_RANGE) {
-#if DEBUG
-      Serial.println(F("  State: RANGE"));
-#endif /* DEBUG */
+      PRINTLN(F("  State: RANGE"));
       if (rxBuffer[0] != FTYPE_RANGE) {
-#if DEBUG
-        Serial.println(F("    Not RANGE"));
-#endif /* DEBUG */
+        PRINTLN(F("    Not RANGE"));
         return;
       }
       if (!DOES_SRC_MATCH(rxBuffer, tagCounterPart, ADDR_SIZE)) {
-#if DEBUG
-        Serial.println(F("    Not from counter part"));
-#endif /* DEBUG */
+        PRINTLN(F("    Not from counter part"));
         return;
       }
-#if DEBUG
-      Serial.println(F("    Sending RANGEREPORT..."));
-#endif
+      PRINTLN(F("    Sending RANGEREPORT..."));
       DW1000.getReceiveTimestamp(timeRangeReceived);
       transmitRangeReport();
       state = STATE_IDLE;
