@@ -1,5 +1,7 @@
 #define DEBUG true
 
+#include <SPI.h>
+
 #include <DW1000.h>
 
 #include "debug.h"
