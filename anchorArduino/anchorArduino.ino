@@ -33,12 +33,18 @@ DW1000Time timeRangeReceived;
 unsigned long curMillis;
 unsigned long lastSent;
 unsigned long lastActivity;
+unsigned long lastStateChange;
 
 byte txBuffer[FRAME_LEN];
 byte rxBuffer[FRAME_LEN];
 
 boolean sentFrame = false;
 boolean receivedFrame = false;
+
+void updateState(int nextState) {
+  state = nextState;
+  lastStateChange = millis();
+}
 
 void noteActivity() {
   lastActivity = millis();
@@ -134,12 +140,19 @@ void setup() {
 
 void loop() {
   curMillis = millis();
-  if (state == STATE_RANGE && lastSent && curMillis - lastSent > RANGE_TIMEOUT_MS) {
+  // In case that tx interrupt is not triggered when in PENDING_PONG state
+  if (state == STATE_PENDING_PONG
+      && curMillis - lastStateChange > PENDING_PONG_TIMEOUT_MS) {
+    updateState(STATE_IDLE);
+  }
+  if (state == STATE_RANGE
+      && (lastSent && curMillis - lastSent > RANGE_TIMEOUT_MS
+          || curMillis - lastStateChange > 2 * RANGE_TIMEOUT_MS)) {
     /*
      * Check RANGE message timeout when state is waiting for RANGE message
      */
     PRINTLN(F("RANGE timeout. Return to IDLE"));
-    state = STATE_IDLE;
+    updateState(STATE_IDLE);
     return;
   }
   if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
@@ -156,7 +169,7 @@ void loop() {
 
     if (state == STATE_PENDING_PONG && txBuffer[0] == FTYPE_PONG) {
       PRINTLN(F("  Pending PONG sent. Return to IDLE"));
-      state = STATE_IDLE;
+      updateState(STATE_IDLE);
       return;
     }
 
@@ -188,7 +201,7 @@ void loop() {
         PRINT(F("    PONG delayed ")); PRINT(d); PRINTLN(F(" ms"));
         delay(d);
         transmitPong();
-        state = STATE_PENDING_PONG;
+        updateState(STATE_PENDING_PONG);
         return;
       }
       if (rxBuffer[0] == FTYPE_POLL) {
@@ -201,7 +214,7 @@ void loop() {
         DW1000.getReceiveTimestamp(timePollReceived);
         tagCounterPart = sender;
         transmitPollAck();
-        state = STATE_RANGE;
+        updateState(STATE_RANGE);
         return;
       }
     }
@@ -229,7 +242,7 @@ void loop() {
       PRINTLN(F("    Sending RANGEREPORT..."));
       DW1000.getReceiveTimestamp(timeRangeReceived);
       transmitRangeReport();
-      state = STATE_IDLE;
+      updateState(STATE_IDLE);
       return;
     }
   }
