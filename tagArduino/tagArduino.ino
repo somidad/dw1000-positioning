@@ -37,12 +37,18 @@ DW1000Time timeRangeReceived;
 
 unsigned long curMillis;
 unsigned long lastSent;
+unsigned long lastStateChange;
 
 byte txBuffer[FRAME_LEN];
 byte rxBuffer[FRAME_LEN];
 
 boolean sentFrame = false;
 boolean receivedFrame = false;
+
+void updateState(int nextState) {
+  state = nextState;
+  lastStateChange = millis();
+}
 
 /***********************************************
  * I2C Raspberry Pi (master) - Arduino (slave) *
@@ -56,6 +62,7 @@ void i2cReceiveEvent(int bytes) {
   }
   if (cmd == CMD_SCAN && state == STATE_IDLE) {
     PRINTLN(F("Transitting to SCAN state..."));
+    updateState(STATE_SCAN);
     return;
   }
   if (cmd == CMD_DATA_READY) {
@@ -199,13 +206,13 @@ void loop() {
   if (state == STATE_PONG && lastSent && curMillis - lastSent > PONG_TIMEOUT_MS) {
     PRINTLN(F("PONG timeout"));
     if (num_anchors < 3) {
-      state = STATE_IDLE;
       PRINTLN(F("  Not enough anchors scanned. Return to IDLE"));
+      updateState(STATE_IDLE);
       return;
     } else {
       PRINTLN(F("  Starting ROUNDROBIN..."));
       idx_anchor = 0;
-      state = STATE_ROUNDROBIN;
+      updateState(STATE_ROUNDROBIN);
       return;
     }
   }
@@ -213,14 +220,14 @@ void loop() {
     PRINTLN(F("POLLACK timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
     idx_anchor++;
-    state = STATE_ROUNDROBIN;
+    updateState(STATE_ROUNDROBIN);
     return;
   }
   if (state == STATE_RANGEREPORT && lastSent && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
     PRINTLN(F("RANGEREPORT timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
     idx_anchor++;
-    state = STATE_ROUNDROBIN;
+    updateState(STATE_ROUNDROBIN);
     return;
   }
 
@@ -235,7 +242,7 @@ void loop() {
     num_anchors = 0;
     PRINTLN(F("  Sending PING..."));
     transmitPing();
-    state = STATE_PONG;
+    updateState(STATE_PONG);
     return;
   }
 
@@ -245,10 +252,10 @@ void loop() {
     if (idx_anchor < num_anchors) {
     PRINTLN(F("  Sending POLL..."));
       transmitPoll();
-      state = STATE_POLLACK;
+      updateState(STATE_POLLACK);
     } else {
-      state = STATE_IDLE;
       PRINTLN(F("  Ranging all anchors. Return to IDLE"));
+      updateState(STATE_IDLE);
     }
     return;
   }
@@ -313,7 +320,7 @@ void loop() {
       DW1000.getReceiveTimestamp(timePollAckReceived);
       PRINTLN(F("    Sending RANGE..."));
       transmitRange();
-      state = STATE_RANGEREPORT;
+      updateState(STATE_RANGEREPORT);
       return;
     }
 
@@ -339,7 +346,7 @@ void loop() {
       calculateRange();
       PRINT(F("    ")); PRINTLN(distance[idx_anchor]);
       idx_anchor++;
-      state = STATE_ROUNDROBIN;
+      updateState(STATE_ROUNDROBIN);
       return;
     }
   }
