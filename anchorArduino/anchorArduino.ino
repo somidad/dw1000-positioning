@@ -142,7 +142,9 @@ void loop() {
     return;
   }
   if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
+#if DEBUG
     Serial.println(F("Seems transceiver not working. Re-init it."));
+#endif /* DEBUG */
     initDW1000Receiver();
     return;
   }
