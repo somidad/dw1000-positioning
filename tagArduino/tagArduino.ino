@@ -215,7 +215,8 @@ void setup() {
 void loop() {
   curMillis = millis();
   if (state == STATE_PONG
-      && lastSent && curMillis - lastSent > PONG_TIMEOUT_MS) {
+      && ((lastSent && curMillis - lastSent > PONG_TIMEOUT_MS)
+          || curMillis - lastStateChange > 2 * PONG_TIMEOUT_MS)) {
     PRINTLN(F("PONG timeout"));
     if (num_anchors < 3) {
       PRINTLN(F("  Not enough anchors scanned. Return to IDLE"));
@@ -228,21 +229,23 @@ void loop() {
       return;
     }
   }
-  if (state == STATE_POLLACK && lastSent
-      && curMillis - lastSent > POLLACK_TIMEOUT_MS) {
+  if (state == STATE_POLLACK
+      && ((lastSent && curMillis - lastSent > POLLACK_TIMEOUT_MS)
+          || curMillis - lastStateChange > 2 * POLLACK_TIMEOUT_MS)) {
     PRINTLN(F("POLLACK timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
     updateRoundRobin();
     return;
   }
-  if (state == STATE_RANGEREPORT && lastSent
-      && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS) {
+  if (state == STATE_RANGEREPORT
+      && ((lastSent && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS)
+          || curMillis - lastStateChange > 2 * RANGEREPORT_TIMEOUT_MS)) {
     PRINTLN(F("RANGEREPORT timeout"));
     PRINTLN(F("  Return to ROUNDROBIN"));
     updateRoundRobin();
     return;
   }
-  if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
+  if (!sentFrame && !receivedFrame && curMillis - lastActivity > RESET_TIMEOUT_MS) {
     PRINTLN(F("Seems transceiver not working. Re-init it."));
     initDW1000Receiver();
     return;
