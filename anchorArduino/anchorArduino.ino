@@ -73,45 +73,47 @@ void setupDW1000() {
   initDW1000Receiver();
 }
 
+void prepareTx() {
+  DW1000.newTransmit();
+  DW1000.setDefaults();
+}
+
 void clearLastSent() {
   lastSent = 0;
 }
 
-void transmitPong() {
-  DW1000.newTransmit();
-  DW1000.setDefaults();
-  txBuffer[0] = FTYPE_PONG;
-  SET_SRC(txBuffer, anchorId, ADDR_SIZE);
-  SET_DST(txBuffer, sender, ADDR_SIZE);
+void startTx() {
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
   clearLastSent();
 }
 
+void transmitPong() {
+  prepareTx();
+  txBuffer[0] = FTYPE_PONG;
+  SET_SRC(txBuffer, anchorId, ADDR_SIZE);
+  SET_DST(txBuffer, sender, ADDR_SIZE);
+  startTx();
+}
+
 void transmitPollAck() {
-  DW1000.newTransmit();
-  DW1000.setDefaults();
+  prepareTx();
   txBuffer[0] = FTYPE_POLLACK;
   SET_SRC(txBuffer, anchorId, ADDR_SIZE);
   SET_DST(txBuffer, tagCounterPart, ADDR_SIZE);
   DW1000.setDelay(reply_delay);
-  DW1000.setData(txBuffer, FRAME_LEN);
-  DW1000.startTransmit();
-  clearLastSent();
+  startTx();
 }
 
 void transmitRangeReport() {
-  DW1000.newTransmit();
-  DW1000.setDefaults();
+  prepareTx();
   txBuffer[0] = FTYPE_RANGEREPORT;
   SET_SRC(txBuffer, anchorId, ADDR_SIZE);
   SET_DST(txBuffer, tagCounterPart, ADDR_SIZE);
   timePollReceived.getTimestamp(txBuffer + 5);
   timePollAckSent.getTimestamp(txBuffer + 10);
   timeRangeReceived.getTimestamp(txBuffer + 15);
-  DW1000.setData(txBuffer, FRAME_LEN);
-  DW1000.startTransmit();
-  clearLastSent();
+  startTx();
 }
 
 /********
