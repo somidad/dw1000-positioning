@@ -142,7 +142,7 @@ void loop() {
     updateState(STATE_IDLE);
   }
   if (state == STATE_RANGE
-      && (lastSent && curMillis - lastSent > RANGE_TIMEOUT_MS
+      && ((lastSent && curMillis - lastSent > RANGE_TIMEOUT_MS)
           || curMillis - lastStateChange > 2 * RANGE_TIMEOUT_MS)) {
     /*
      * Check RANGE message timeout when state is waiting for RANGE message
@@ -151,7 +151,7 @@ void loop() {
     updateState(STATE_IDLE);
     return;
   }
-  if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
+  if (!sentFrame && !receivedFrame && curMillis - lastActivity > RESET_TIMEOUT_MS) {
     PRINTLN(F("Seems transceiver not working. Re-init it."));
     initDW1000Receiver();
     return;
