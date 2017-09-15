@@ -37,6 +37,7 @@ DW1000Time timeRangeReceived;
 
 unsigned long curMillis;
 unsigned long lastSent;
+unsigned long lastActivity;
 unsigned long lastStateChange;
 
 byte txBuffer[FRAME_LEN];
@@ -48,6 +49,10 @@ boolean receivedFrame = false;
 void updateState(int nextState) {
   state = nextState;
   lastStateChange = millis();
+}
+
+void noteActivity() {
+  lastActivity = millis();
 }
 
 /***********************************************
@@ -122,7 +127,8 @@ void initDW1000Receiver() {
   DW1000.newReceive();
   DW1000.setDefaults();
   DW1000.receivePermanently(true);
-  DW1000.startReceive();  
+  DW1000.startReceive();
+  noteActivity();
 }
 
 void setupDW1000() {
@@ -233,6 +239,11 @@ void loop() {
     updateState(STATE_ROUNDROBIN);
     return;
   }
+  if (!sentFrame && !receivedFrame && (curMillis - lastActivity > RESET_TIMEOUT_MS)) {
+    PRINTLN(F("Seems transceiver not working. Re-init it."));
+    initDW1000Receiver();
+    return;
+  }
 
   if (state == STATE_SCAN) {
     PRINTLN(F("State: SCAN"));
@@ -266,25 +277,25 @@ void loop() {
   if (sentFrame) {
     PRINTLN(F("Sent something"));
     sentFrame = false;
+    noteActivity();
+    lastSent = lastActivity;
     if (txBuffer[0] == FTYPE_PING) {
       PRINTLN(F("  PING sent"));
-      lastSent = millis();
     }
     if (txBuffer[0] == FTYPE_POLL) {
       PRINTLN(F("  POLL sent. Getting timestamp..."));
       DW1000.getTransmitTimestamp(timePollSent);
-      lastSent = millis();
     }
     if (txBuffer[0] == FTYPE_RANGE) {
       PRINTLN(F("  RANGE sent. Getting timestamp..."));
       DW1000.getTransmitTimestamp(timeRangeSent);
-      lastSent = millis();
     }
   }
 
   if (receivedFrame) {
     PRINTLN(F("Received something"));
     receivedFrame = false;
+    noteActivity();
     DW1000.getData(rxBuffer, FRAME_LEN);
 
     if (state == STATE_PONG) {
