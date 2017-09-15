@@ -73,6 +73,10 @@ void setupDW1000() {
   initDW1000Receiver();
 }
 
+void clearLastSent() {
+  lastSent = 0;
+}
+
 void transmitPong() {
   DW1000.newTransmit();
   DW1000.setDefaults();
@@ -81,6 +85,7 @@ void transmitPong() {
   SET_DST(txBuffer, sender, ADDR_SIZE);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
+  clearLastSent();
 }
 
 void transmitPollAck() {
@@ -92,7 +97,7 @@ void transmitPollAck() {
   DW1000.setDelay(reply_delay);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
-  lastSent = 0;
+  clearLastSent();
 }
 
 void transmitRangeReport() {
@@ -106,6 +111,7 @@ void transmitRangeReport() {
   timeRangeReceived.getTimestamp(txBuffer + 15);
   DW1000.setData(txBuffer, FRAME_LEN);
   DW1000.startTransmit();
+  clearLastSent();
 }
 
 /********
@@ -150,6 +156,7 @@ void loop() {
       Serial.println(F("  Pending PONG sent. Return to IDLE"));
 #endif /* DEBUG */
       state = STATE_IDLE;
+      lastSent = millis();
       noteActivity();
       return;
     }
@@ -159,6 +166,7 @@ void loop() {
       Serial.println(F("  POLLACK sent. Getting timestamp..."));
 #endif /* DEBUG */
       DW1000.getTransmitTimestamp(timePollAckSent);
+      lastSent = millis();
       noteActivity();
     }
 
@@ -166,6 +174,7 @@ void loop() {
 #if DEBUG
       Serial.println(F("  RANGEREPORT sent"));
 #endif /* DEBUG */
+      lastSent = millis();
       noteActivity();
     }
   }
