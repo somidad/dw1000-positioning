@@ -127,7 +127,7 @@ void setupDW1000() {
   DW1000.setDefaults();
   DW1000.setNetworkId(networkId);
   DW1000.setDeviceAddress(tagId);
-  DW1000.enableMode(DW1000.MODE_LONGDATA_RANGE_LOWPOWER);
+  DW1000.enableMode(DW1000.MODE_LONGDATA_RANGE_ACCURACY);
   DW1000.commitConfiguration();
 
   DW1000.attachSentHandler(spiSendEvent);
