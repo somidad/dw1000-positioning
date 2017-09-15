@@ -141,41 +141,40 @@ void setupDW1000() {
   initDW1000Receiver();
 }
 
-void clearLastSent() {
+void prepareTx() {
+  DW1000.newTransmit();
+  DW1000.setDefaults();
+}
+
+void startTx() {
+  DW1000.setData(txBuffer, FRAME_LEN);
+  DW1000.startTransmit();
+  // timeout will be asserted after tx interrupt
   lastSent = 0;
 }
 
 void transmitPing() {
-  DW1000.newTransmit();
-  DW1000.setDefaults();
+  prepareTx();
   txBuffer[0] = FTYPE_PING;
   SET_SRC(txBuffer, tagId, ADDR_SIZE);
-  DW1000.setData(txBuffer, FRAME_LEN);
-  DW1000.startTransmit();
-  clearLastSent();
+  startTx();
 }
 
 void transmitPoll() {
-  DW1000.newTransmit();
-  DW1000.setDefaults();
+  prepareTx();
   txBuffer[0] = FTYPE_POLL;
   SET_SRC(txBuffer, tagId, ADDR_SIZE);
   SET_DST(txBuffer, anchorId[idx_anchor], ADDR_SIZE);
-  DW1000.setData(txBuffer, FRAME_LEN);
-  DW1000.startTransmit();
-  clearLastSent();
+  startTx();
 }
 
 void transmitRange() {
-  DW1000.newTransmit();
-  DW1000.setDefaults();
+  prepareTx();
   txBuffer[0] = FTYPE_RANGE;
   SET_SRC(txBuffer, tagId, ADDR_SIZE);
   SET_DST(txBuffer, anchorId[idx_anchor], ADDR_SIZE);
   DW1000.setDelay(reply_delay);
-  DW1000.setData(txBuffer, FRAME_LEN);
-  DW1000.startTransmit();
-  clearLastSent();
+  startTx();
 }
 
 void calculateRange() {
