@@ -136,6 +136,7 @@ void loop() {
   // In case that tx interrupt is not triggered when in PENDING_PONG state
   if (state == STATE_PENDING_PONG
       && curMillis - lastStateChange > PENDING_PONG_TIMEOUT_MS) {
+    PRINTLN(F("Seems Pending Pong lost. Return to IDLE"));
     updateState(STATE_IDLE);
   }
   if (state == STATE_RANGE
