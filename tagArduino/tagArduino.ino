@@ -318,7 +318,9 @@ void loop() {
       memcpy(&anchorId[idx_anchor], rxBuffer + 1, ADDR_SIZE);
       PRINT(F("    Anchor")); PRINT(idx_anchor); PRINT(F("(")); PRINT(anchorId[idx_anchor]); PRINTLN(F(") found"));
       num_anchors++;
+      num_anchors = min(num_anchors, 5);
       idx_anchor++;
+      idx_anchor %= 5;
       return;
     }
 
