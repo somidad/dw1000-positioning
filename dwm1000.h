@@ -25,6 +25,7 @@
 #define POLLACK_TIMEOUT_MS      10
 #define RANGE_TIMEOUT_MS        10
 #define RANGEREPORT_TIMEOUT_MS  10
+#define PENDING_PONG_TIMEOUT_MS 10
 #define REPLY_DELAY_MS           3
 #define RESET_TIMEOUT_MS      1000
 
