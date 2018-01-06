@@ -1,18 +1,21 @@
 # ToA based positioning with DW1000 UWB module
 
+## Overview
+
+![](_assets/overview.DrawIO.png)
+
 ## Components
 
-- Project root
-   - `tagArduino/`: Arduino sketch for tag which receives command from Raspberry Pi and controls DW1000
-   - `tagRPi/`: Raspberry Pi C++ program which sends command to `tagArduino` and receives result
-   - `anchorArduino/`: Arduino sketch for anchor which controls DW1000
-   - `headers`: Common header files are located here
+- `tagArduino/`: Arduino sketch for DW1000 tag
+- `tagRPi/`: Raspberry Pi C++ app controlling `tagArduino`
+- `anchorArduino/`: Arduino sketch for DW1000 anchor
+- `headers/`: Common header files are located here
 
 You can ignore other files
 
 ## Instructions
 
-Navigate `README.md` in each directory
+Navigate and find `README.md` in each directory of:
 
 - [tagArduino](tagArduino)
 - [tagRPi](tagRPi)
