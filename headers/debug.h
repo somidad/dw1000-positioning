@@ -11,4 +11,4 @@
   #define PRINTLN(x)
 #endif // DEBUG
 
-#endif DEBUG_H
+#endif /* DEBUG_H */
