@@ -20,16 +20,19 @@ using namespace mlat;
 int main(int argc, char* argv[]) {
   int ret = 0;
   int i2cFd;
+
+  // Read from anchor deployment configuration file
+  vector<int> config_anchorId;
+  vector<vector<float>> config_anchorPos;
+  readAnchors("anchors.csv", config_anchorId, config_anchorPos);
+
+  // Obtained from Arduino
   uint16_t data_anchorId[NUM_ANCHORS];
   float data_distance[NUM_ANCHORS];
 
-  vector<int> config_anchorId;
-  vector<vector<float>> config_anchorPos;
-
+  // Filtered from data_{anchorId,distance}
   vector<uint16_t> validAnchors;
   vector<float> validDistance;
-
-  readAnchors("anchors.csv", config_anchorId, config_anchorPos);
 
   i2cFd = openI2C(I2CDEV, I2CSLAVEADDR);
   if (i2cFd < 0) {
@@ -37,7 +40,9 @@ int main(int argc, char* argv[]) {
   }
 while (true) {
   triggerScan(i2cFd);
-  usleep(330 * 1000); // wait for scanning and ranging delay (330 ms)
+  // NOTE, TODO: Tunable value according to (...)_TIMEOUT_MS `arduino.h`
+  // wait for scanning and ranging delay (330 ms)
+  usleep(330 * 1000);
   cout << "Reading measurement..." << endl;
   ret = readMeasurement(i2cFd, data_anchorId, data_distance);
   if (ret < 0) {
@@ -67,6 +72,8 @@ while (true) {
     }
     ranges(i) = validDistance[i];
   }
+  // TODO: You need to define search space boundary to prevent UNEXPECTED RESULT
+  // See https://github.com/gsongsong/mlat
   MLAT::GdescentResult gdescent_result = MLAT::mlat(anchors, ranges);
 
   // print out
@@ -84,4 +91,3 @@ while (true) {
   close(i2cFd);
   return ret;
 }
-
