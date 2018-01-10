@@ -14,11 +14,13 @@
 
 using namespace std;
 
+// In case of accessing a constant value via addressing
 uint8_t cmd_scan = CMD_SCAN;
 uint8_t cmd_data_ready = CMD_DATA_READY;
 uint8_t cmd_type_id = CMD_TYPE_ID;
 uint8_t cmd_type_dist = CMD_TYPE_DIST;
 
+// Connect with Arduino
 int openI2C(const char* i2cdev, int i2cslaveaddr) {
   int i2cFd = open(i2cdev, O_RDWR);
   if (i2cFd < 0) {
@@ -29,6 +31,7 @@ int openI2C(const char* i2cdev, int i2cslaveaddr) {
   return i2cFd;
 }
 
+// Trigger Arduino to scan
 int triggerScan(int i2cFd) {
   cout << "Triggering scan..." << endl;
   if (write(i2cFd, &cmd_scan, 1) != 1) {
@@ -38,6 +41,7 @@ int triggerScan(int i2cFd) {
   return 0;
 }
 
+// Ask Arduino whether it is ready to report measurements
 bool isReady(int i2cFd) {
   uint8_t data[32];
 
@@ -75,6 +79,8 @@ int getAnchorIds(int i2cFd, uint16_t* anchorId) {
     cout << "  Reading Anchors' IDs failed" << endl;
     return -1;
   }
+  // HACK: Convert a 2-byte long binary value to integer
+  // Arduino uses little endian
   for (int i = 0; i < NUM_ANCHORS; i++) {
     anchorId[i] = ID_NONE;
     /* Arduino uses little endian */
@@ -95,11 +101,9 @@ int getDists(int i2cFd, float* distance) {
     cout << "Reading distance measurements failed" << endl;
     return -1;
   }
+  // HACK: Convert a 4-byte long binary value to float
+  // Arduino uses little endian
   for (int i = 0; i < NUM_ANCHORS; i++) {
-    /*
-     * Arduino uses little endian
-     *  Tricky part to assign float value via binary representation
-     */
     uint32_t float_binary = (data[4 * i + 3] << 24) | (data[4 * i + 2] << 16)
                           | (data[4 * i + 1] <<  8) | (data[4 * i + 0]      );
     distance[i] = *(float*)&float_binary;
@@ -127,6 +131,7 @@ int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance) {
   return 0;
 }
 
+// Copy measurements if valid anchor ID (!= 0) and valid distance reading (> 0) exist
 void getValidMeasurement(uint16_t* anchorId, float* distance,
                         vector<uint16_t>& validAnchors, vector<float>& validDistance) {
   validAnchors.clear();

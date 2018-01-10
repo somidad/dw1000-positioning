@@ -8,25 +8,36 @@
 #include "debug.h"
 #include "def.h"
 #include "i2c.h"
-#include "dwm1000.h"
+#include "arduino.h"
 
 #define PIN_IRQ  2
 #define PIN_RST  9
 #define PIN_SS  SS
 
 /* Edit tagId */
+// Each tag must have a unique tag ID (do not use ID 0)
+// DO NOT REMOVE FLAT_TAG
 const uint16_t tagId = FLAG_TAG | 1;
+// UWB anchors and tags must have the same network ID
 const uint16_t networkId = 10;
 
+// Command sent by Raspberry Pi via I2C interface
 volatile char cmd = CMD_NONE;
+// Current state of a UWB anchor state machine
 volatile char state = STATE_IDLE;
+// Type of data that Raspberry Pi wants (anchor ID, distance measurements)
 volatile char type = TYPE_NONE;
 
+// The number of observed anchors
 unsigned char num_anchors = 0;
+// Index of the current anchor in two way ranging
 unsigned char idx_anchor = 0;
+// Array of anchors' IDs
 uint16_t anchorId[NUM_ANCHORS] = {ID_NONE, ID_NONE, ID_NONE, ID_NONE, ID_NONE};
+// Array of distance measurements of the corresponding anchors
 float distance[NUM_ANCHORS] = {0, 0, 0, 0, 0};
 
+// UWB anchors and tags must have the same replay_delay
 DW1000Time reply_delay = DW1000Time(REPLY_DELAY_MS, DW1000Time::MILLISECONDS);
 DW1000Time timePollSent;
 DW1000Time timePollReceived;
@@ -35,15 +46,22 @@ DW1000Time timePollAckReceived;
 DW1000Time timeRangeSent;
 DW1000Time timeRangeReceived;
 
+// Last time that loop() is called
 unsigned long curMillis;
+// Last time that a frame is PUSHED INTO THE AIR FROM THE S/W BUFFER
 unsigned long lastSent;
+// Last time that a UWB device sends or receives a frame
+// i.e., meaningful DWM1000 activity
 unsigned long lastActivity;
 unsigned long lastStateChange;
 
 byte txBuffer[FRAME_LEN];
 byte rxBuffer[FRAME_LEN];
 
+// Set to true if a frame is pushed into the air and SPI tx interrupt is triggered
 boolean sentFrame = false;
+// Set to true if a frame is received and SPI rx interrupt is triggered
+// Not yet stored into the S/W buffer
 boolean receivedFrame = false;
 
 void updateState(int nextState) {
@@ -63,10 +81,13 @@ void noteActivity() {
 /***********************************************
  * I2C Raspberry Pi (master) - Arduino (slave) *
  ***********************************************/
+// Raspberry Pi first writes and Arduino reads data
 void i2cReceiveEvent(int bytes) {
   if (!bytes) {
     return;
   }
+  // Although Raspberry PI sends 1-byte long data via I2C interface,
+  // It is safe to read bytes as many as Arduino can until there is no data remained
   while (Wire.available()) {
     cmd = Wire.read();
   }
@@ -75,20 +96,24 @@ void i2cReceiveEvent(int bytes) {
     updateState(STATE_SCAN);
     return;
   }
+  // Raspberry Pi requests data representing whether data is ready
   if (cmd == CMD_DATA_READY) {
     type = TYPE_DATA_READY;
     return;
   }
+  // Raspberry Pi requests data representing anchors' IDs
   if (cmd == CMD_TYPE_ID) {
     type = TYPE_ID;
     return;
   }
+  // Raspberry Pi requests data representing distance measurements
   if (cmd == CMD_TYPE_DIST) {
     type = TYPE_DIST;
     return;
   }
 }
 
+// And then Arduino writes and Raspberry Pi reads data
 void i2cRequestEvent() {
   if (state != STATE_IDLE || type == TYPE_NONE) {
     Wire.write(I2C_NODATA);
@@ -98,6 +123,8 @@ void i2cRequestEvent() {
     Wire.write(I2C_DATARD);
     return;
   }
+  // HACK: Regard array of anchors' IDs and distance measurements as a long binay data
+  // Note that Arduino uses little endian
   if (type == TYPE_ID) {
     Wire.write((byte*)anchorId, 2 * NUM_ANCHORS);
     return;
@@ -190,6 +217,8 @@ void transmitRange() {
 
 void calculateRange() {
     // asymmetric two-way ranging (more computation intense, less error prone)
+    // See APS013: The Implementation of Two-Way Ranging with he DW1000
+    // https://decawave.com/sites/default/files/aps013_dw1000_and_two_way_ranging_v2.2.pdf pp. 4
     DW1000Time round1 = (timePollAckReceived - timePollSent).wrap();
     DW1000Time reply1 = (timePollAckSent - timePollReceived).wrap();
     DW1000Time round2 = (timeRangeReceived - timePollAckSent).wrap();
@@ -214,21 +243,30 @@ void setup() {
 
 void loop() {
   curMillis = millis();
+  // Safety watchdog to avoid stuck in PONG state
+  // 1. If SPI tx interrupt captured (confirmed that PING is broadcasted)
+  // 2. If SPI tx interrupt is not captured for some reason
   if (state == STATE_PONG
       && ((lastSent && curMillis - lastSent > PONG_TIMEOUT_MS)
           || curMillis - lastStateChange > 2 * PONG_TIMEOUT_MS)) {
     PRINTLN(F("PONG timeout"));
     if (num_anchors < 3) {
+      // Seems not enough anchors exist (lack of deployment, collision, delayed tx)
       PRINTLN(F("  Not enough anchors scanned. Return to IDLE"));
       updateState(STATE_IDLE);
       return;
     } else {
+      // 3 or more anchors are observed
+      // Proceed to two way ranging in a round robin manner
       PRINTLN(F("  Starting ROUNDROBIN..."));
       idx_anchor = 0;
       updateState(STATE_ROUNDROBIN);
       return;
     }
   }
+  // Safety watchdog to avoid stuck in POLLACK state
+  // 1. If SPI tx interrupt captured (confirmed that POLL is sent)
+  // 2. If SPI tx interrupt is not captured for some reason
   if (state == STATE_POLLACK
       && ((lastSent && curMillis - lastSent > POLLACK_TIMEOUT_MS)
           || curMillis - lastStateChange > 2 * POLLACK_TIMEOUT_MS)) {
@@ -237,6 +275,9 @@ void loop() {
     updateRoundRobin();
     return;
   }
+  // Safety watchdog to avoid stuck in RANGEREPORT state
+  // 1. If SPI tx interrupt captured (confirmed that RANGE is sent)
+  // 2. If SPI tx interrupt is not captured for some reason
   if (state == STATE_RANGEREPORT
       && ((lastSent && curMillis - lastSent > RANGEREPORT_TIMEOUT_MS)
           || curMillis - lastStateChange > 2 * RANGEREPORT_TIMEOUT_MS)) {
@@ -245,6 +286,7 @@ void loop() {
     updateRoundRobin();
     return;
   }
+  // Arduino didn't capture SIP tx/rx interrupts for more than RESET_TIMEOUT_MS
   if (!sentFrame && !receivedFrame && curMillis - lastActivity > RESET_TIMEOUT_MS) {
     PRINTLN(F("Seems transceiver not working. Re-init it."));
     initDW1000Receiver();
@@ -280,6 +322,9 @@ void loop() {
     return;
   }
 
+  // SPI tx interrupt is captured
+  // Update some time variables, state
+  // Extract DW1000 high-precision time value if needed
   if (sentFrame) {
     PRINTLN(F("Sent something"));
     sentFrame = false;
@@ -298,6 +343,9 @@ void loop() {
     }
   }
 
+  // SPI rx interrupt is captured
+  //  Update some time variables, state
+  // Extract DW1000 high-precision time value if needed
   if (receivedFrame) {
     PRINTLN(F("Received something"));
     receivedFrame = false;

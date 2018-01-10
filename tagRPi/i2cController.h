@@ -13,10 +13,10 @@ int triggerScan(int i2cFd);
 bool isReady(int i2cFd);
 int getAnchorIds(int i2cFd, uint16_t* anchorId);
 int getDists(int i2cFd, float* distance);
+// isReady + getAnchorIds + getDists
 int readMeasurement(int i2cFd, uint16_t* anchorId, float* distance);
 void getValidMeasurement(uint16_t* anchorId, float* distance,
                          vector<uint16_t>& validAnchors,
                          vector<float>& validDistance);
 
 #endif /* I2C_CONTROLLER_H */
-

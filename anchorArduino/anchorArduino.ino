@@ -6,34 +6,47 @@
 
 #include "debug.h"
 #include "def.h"
-#include "dwm1000.h"
+#include "arduino.h"
 
 #define PIN_IRQ  2
 #define PIN_RST  9
 #define PIN_SS  SS
 
 /* Edit anchorId */
+// Each anchor must have a unique anchor ID (do not use ID 0)
 const uint16_t anchorId = 1;
+// UWB anchors and tags must have the same network ID
 const uint16_t networkId = 10;
+// Sender of the last received frame in the S/W buffer
 uint16_t sender;
+// Counter part tag during two way ranging (PING, PONNG, RANGE, RANGEREPORT)
 uint16_t tagCounterPart = ID_NONE;
 
+// Current state of a UWB anchor state machine
 char state = STATE_IDLE;
 
+// UWB anchors and tags must have the same replay_delay
 DW1000Time reply_delay = DW1000Time(REPLY_DELAY_MS, DW1000Time::MILLISECONDS);
 DW1000Time timePollReceived;
 DW1000Time timePollAckSent;
 DW1000Time timeRangeReceived;
 
+// Last time that loop() is called
 unsigned long curMillis;
+// Last time that a frame is PUSHED INTO THE AIR FROM THE S/W BUFFER
 unsigned long lastSent;
+// Last time that a UWB device sends or receives a frame
+// i.e., meaningful DWM1000 activity
 unsigned long lastActivity;
 unsigned long lastStateChange;
 
 byte txBuffer[FRAME_LEN];
 byte rxBuffer[FRAME_LEN];
 
+// Set to true if a frame is pushed into the air and SPI tx interrupt is triggered
 boolean sentFrame = false;
+// Set to true if a frame is received and SPI rx interrupt is triggered
+// Not yet stored into the S/W buffer
 boolean receivedFrame = false;
 
 void updateState(int nextState) {
@@ -135,12 +148,16 @@ void setup() {
 
 void loop() {
   curMillis = millis();
-  // In case that tx interrupt is not triggered when in PENDING_PONG state
+  // Safety watchdog to avoid stuck in PENDING_PONG state
+  // Sometimes SPI tx interrupt may not be captured by Arduino
   if (state == STATE_PENDING_PONG
       && curMillis - lastStateChange > PENDING_PONG_TIMEOUT_MS) {
     PRINTLN(F("Seems Pending Pong lost. Return to IDLE"));
     updateState(STATE_IDLE);
   }
+  // Safety watchdog to avoid stuck in RANGE state
+  // 1. If SPI tx interrupt is captured (confirmed that POLLACK is sent)
+  // 2. If SPI tx interrupt is not captured for some reasons
   if (state == STATE_RANGE
       && ((lastSent && curMillis - lastSent > RANGE_TIMEOUT_MS)
           || curMillis - lastStateChange > 2 * RANGE_TIMEOUT_MS)) {
@@ -151,12 +168,16 @@ void loop() {
     updateState(STATE_IDLE);
     return;
   }
+  // Arduino didn't capture SIP tx/rx interrupts for more than RESET_TIMEOUT_MS
   if (!sentFrame && !receivedFrame && curMillis - lastActivity > RESET_TIMEOUT_MS) {
     PRINTLN(F("Seems transceiver not working. Re-init it."));
     initDW1000Receiver();
     return;
   }
 
+  // SPI tx interrupt is captured
+  // Update some time variables, state
+  // Extract DW1000 high-precision time value if needed
   if (sentFrame) {
     PRINTLN(F("Sent something"));
     sentFrame = false;
@@ -179,6 +200,9 @@ void loop() {
     }
   }
 
+  // SPI rx interrupt is captured
+  //  Update some time variables, state
+  // Extract DW1000 high-precision time value if needed
   if (receivedFrame) {
     PRINTLN(F("Received something"));
     receivedFrame = false;

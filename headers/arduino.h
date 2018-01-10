@@ -1,6 +1,7 @@
 #ifndef __DWM1000_H
 #define __DWM1000_H
 
+// Macros in order to avoid hard coding
 #define STATE_IDLE          0
 #define STATE_SCAN          1
 #define STATE_PONG          2
@@ -18,8 +19,10 @@
 #define FTYPE_RANGE       4
 #define FTYPE_RANGEREPORT 5
 
+// type (1), src (2), dst (2), time1 (5), time2 (5), time3 (5): total (20)
 #define FRAME_LEN 20
 
+// Parameters are tunable, but anchors and tags must have the same values
 #warning "TODO: Temporary values"
 #define PONG_TIMEOUT_MS        100
 #define POLLACK_TIMEOUT_MS      10
@@ -29,6 +32,7 @@
 #define REPLY_DELAY_MS           3
 #define RESET_TIMEOUT_MS      1000
 
+// Wrapper macro for convenience
 #define SET_SRC(buf, addr, sz) memcpy(buf + 1, &addr, sz)
 #define SET_DST(buf, addr, sz) memcpy(buf + 3, &addr, sz)
 #define GET_SRC(buf, addr, sz) memcpy(&addr, buf + 1, sz)
