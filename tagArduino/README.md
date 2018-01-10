@@ -1,13 +1,13 @@
 # tagArduino
 
+## Installation
+
 ### Prerequisite
 
 - Arduino IDE
 - Navigate [arduino-dw1000](https://github.com/thotro/arduino-dw1000) and follow
 instruction to install the library
 - [DWM1000 breakout boards](https://oshpark.com/shared_projects?q=dwm1000)
-
-## Installation
 
 ### Flashing
 
@@ -20,6 +20,10 @@ instruction to install the library
 1. Flash the sketch file
 
 ### Wiring
+
+![](../_assets/wiring-arduino.png)
+
+#### Arduino-DWM1000
 
 Wire 3.3 V and ground as shown in below:
 
@@ -36,6 +40,12 @@ Figure from [DWM1000 datasheet](https://www.decawave.com/sites/default/files/res
 - `SPIMOSI`: Arduino Pro Mini pin labeled 11 (`MOSI`)
 - `SPIMISO`: Arduino Pro Mini pin labeled 12 (`MISO`)
 - `SPICLK`: Arduino Pro Mini pin labeled 13 (`CLK`)
+
+#### Arduino-Raspberry Pi
+
+![](../_assets/wiring-raspberrypi.png)
+
+Match and connect `SDA` and `SCL`
 
 ## State Diagram
 
