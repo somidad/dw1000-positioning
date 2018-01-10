@@ -73,8 +73,20 @@ while (true) {
     ranges(i) = validDistance[i];
   }
   // TODO: You need to define search space boundary to prevent UNEXPECTED RESULT
+  // If not, search space boundary is defined as a cube constrained to
+  // minimum and maximum coordinates of x, y, z of anchors
+  // If anchors are in the same plane, i.e., all anchors have the same (similar)
+  // coordinate of at least one axes, you MUST define search space boundary
   // See https://github.com/gsongsong/mlat
-  MLAT::GdescentResult gdescent_result = MLAT::mlat(anchors, ranges);
+  // So, defining search space boundary is all up to you
+  ArrayXXd bounds(2, anchors.rows());
+  for (int i = 0; i < anchors.rows(); i++) {
+    bounds(0, i) = anchors.col(i).minCoeff(); // minimum boundary of ith axis
+    bounds(1, i) = anchors.col(i).maxCoeff(); // maximum boundary of ith axis
+  }
+  // hard coded height (3 m) of search boundary
+  bounds(1, anchors.rows() - 1) = 3;
+  MLAT::GdescentResult gdescent_result = MLAT::mlat(anchors, ranges, bounds);
 
   // print out
   for (int i = 0; i < NUM_ANCHORS; i++) {
@@ -84,6 +96,7 @@ while (true) {
   cout << "Estimated position" << endl;
   cout << gdescent_result.estimator << endl;
 
+  // Some random delay for Arduino to idling
   int d = 50;
   usleep(d * 1000);
 }
