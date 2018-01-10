@@ -8,7 +8,7 @@
 #include "debug.h"
 #include "def.h"
 #include "i2c.h"
-#include "dwm1000.h"
+#include "arduino.h"
 
 #define PIN_IRQ  2
 #define PIN_RST  9

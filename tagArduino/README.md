@@ -11,7 +11,7 @@ instruction to install the library
 
 ### Flashing
 
-1. Copy `debug.h`, `def.h`, `dwm1000.h`, and `i2c.h` from `headers` directory to here
+1. Copy `debug.h`, `def.h`, `arduino.h`, and `i2c.h` from `headers` directory to here
 1. Edit a sketch file `tagArduino.ino`
    - Edit `networkId` to have a specific integer so that all anchors and tags
       share the same value
@@ -43,7 +43,7 @@ Figure from [DWM1000 datasheet](https://www.decawave.com/sites/default/files/res
 
 ## Installing `tagArduino`
 
-- Copy or link `def.h`, `dwm1000.h`, `i2c.h` from the parent directory to here
+- Copy or link `def.h`, `arduino.h`, `i2c.h` from the parent directory to here
 - Edit `I2CSLAVEADDR` in `i2c.h` if needed
 
 Compile and upload via Arduino IDE

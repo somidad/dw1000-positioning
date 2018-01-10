@@ -11,7 +11,7 @@ instruction to install the library
 
 ### Flashing
 
-1. Copy `debug.h`, `def.h`, and `dwm1000.h` from `headers` directory to here
+1. Copy `debug.h`, `def.h`, and `arduino.h` from `headers` directory to here
 1. Edit a sketch file `anchorArduino.ino`
    - Edit `networkId` to have a specific integer so that all anchors and tags
       share the same value
