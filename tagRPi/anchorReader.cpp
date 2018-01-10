@@ -12,7 +12,7 @@ int readAnchors(const char* anchorFileName,
 
   while (anchorFile.good()) {
     getline(anchorFile, value, ',');
-    if (value == "\n") {
+    if (value == "\n" || value.empty()) {
       continue;
     }
     config_anchorId.push_back(stoi(value));
